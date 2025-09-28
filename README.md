@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Catan Chambers
+
+A mobile-first Catan tournament leaderboard app built with Next.js, Supabase, and shadcn/ui.
+
+## Features
+
+- **Real-time leaderboard** with player standings and statistics
+- **Interactive analytics** showing cumulative points progression over time
+- **Game entry form** with achievements tracking (Longest Road, Largest Army)
+- **Prize pool tracking** (₹10,000 tournament with probability calculations)
+- **Comprehensive stats** including most wins, achievements, and leaderboard positions
+- **Mobile-optimized interface** with bottom navigation
+- **Animated splash screen** with rotating logo
+- **Supabase real-time updates** for instant data synchronization
+
+## Players
+
+- **Anas** - Strategic mastermind
+- **Ezzy** - Resource collector
+- **Akif** - Road builder
+- **Tamim** - Knight commander
+
+## Tech Stack
+
+- **Next.js 14+** (App Router)
+- **Supabase** (PostgreSQL, Real-time subscriptions)
+- **shadcn/ui** components
+- **Tailwind CSS** with custom fonts (Roboto, Macondo)
+- **Framer Motion** for animations
+- **Chart.js** for interactive charts
+- **Vercel** for deployment
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables in `.env.local`
+4. Run the development server: `npm run dev`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Environment Variables
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_PASSWORD=your_admin_password
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run the SQL scripts in the following order:
+1. `supabase-schema.sql` - Creates tables and initial data
+2. `supabase-realtime-setup.sql` - Enables real-time subscriptions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+The app is configured for deployment on Vercel with:
+- Automatic deployments from main branch
+- Supabase keep-alive cron job
+- Environment variables configured
+- Custom fonts (Roboto for body, Macondo for splash screen)
 
-To learn more about Next.js, take a look at the following resources:
+## Tournament Rules
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **20 games total** in the tournament
+- **Last place** buys the **winner** something worth ₹10,000
+- **Real-time probability** calculations for prize outcomes
+- **Achievement tracking** for Longest Road and Largest Army

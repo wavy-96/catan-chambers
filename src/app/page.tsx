@@ -1,103 +1,92 @@
-import Image from "next/image";
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import SplashScreen from '@/components/SplashScreen'
+import Leaderboard from '@/components/Leaderboard'
+import GameEntryForm from '@/components/GameEntryForm'
+import Analytics from '@/components/Analytics'
+import HistoryDialog from '@/components/HistoryDialog'
+import StatsPage from '@/components/StatsPage'
+import { Toaster } from '@/components/ui/sonner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Trophy, BarChart3, History, TrendingUp } from 'lucide-react'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [showSplash, setShowSplash] = useState(true)
+  const [showGameForm, setShowGameForm] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  const handleSplashComplete = () => {
+    setShowSplash(false)
+  }
+
+  const handleAddGame = () => {
+    setShowGameForm(true)
+  }
+
+  const handleGameAdded = () => {
+    setShowGameForm(false)
+  }
+
+  const handleShowAnalytics = () => setActiveTab('analytics')
+
+  const [activeTab, setActiveTab] = useState('leaderboard')
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />
+  }
+
+  return (
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 backdrop-blur border-t border-amber-100">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
+          <TabsList className="grid grid-cols-3 w-full h-16 bg-transparent">
+            <TabsTrigger value="leaderboard" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
+              <Trophy className="w-6 h-6" />
+              <span className="text-[11px]">Leaderboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
+              <TrendingUp className="w-6 h-6" />
+              <span className="text-[11px]">Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
+              <BarChart3 className="w-6 h-6" />
+              <span className="text-[11px]">History</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-6xl mx-auto pb-20">
+        <TabsContent value="leaderboard">
+          <Leaderboard 
+            onAddGame={handleAddGame}
+            onShowAnalytics={() => setActiveTab('stats')}
+            onShowHistory={() => setShowHistory(true)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        </TabsContent>
+
+        <TabsContent value="stats" className="p-0">
+          <StatsPage />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="p-0">
+          <Analytics isOpen={true} onClose={() => setActiveTab('leaderboard')} />
+        </TabsContent>
+      </Tabs>
+
+      <GameEntryForm
+        isOpen={showGameForm}
+        onClose={() => setShowGameForm(false)}
+        onGameAdded={handleGameAdded}
+      />
+
+      <HistoryDialog 
+        open={showHistory} 
+        onClose={() => setShowHistory(false)} 
+      />
+
+      <Toaster />
+    </>
+  )
 }
