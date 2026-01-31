@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import Image from 'next/image'
 import SplashScreen from '@/components/SplashScreen'
 import Leaderboard from '@/components/Leaderboard'
 import GameEntryForm from '@/components/GameEntryForm'
@@ -9,12 +10,13 @@ import HistoryDialog from '@/components/HistoryDialog'
 import StatsPage from '@/components/StatsPage'
 import { Toaster } from '@/components/ui/sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Trophy, BarChart3, History, TrendingUp } from 'lucide-react'
+import { TournamentProvider } from '@/lib/tournament-context'
 
-export default function Home() {
+function AppContent() {
   const [showSplash, setShowSplash] = useState(true)
   const [showGameForm, setShowGameForm] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [activeTab, setActiveTab] = useState('leaderboard')
 
   const handleSplashComplete = () => {
     setShowSplash(false)
@@ -28,37 +30,19 @@ export default function Home() {
     setShowGameForm(false)
   }
 
-  const handleShowAnalytics = () => setActiveTab('analytics')
-
-  const [activeTab, setActiveTab] = useState('leaderboard')
-
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />
   }
 
   return (
-    <>
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 backdrop-blur border-t border-amber-100">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-md mx-auto">
-          <TabsList className="grid grid-cols-3 w-full h-16 bg-transparent">
-            <TabsTrigger value="leaderboard" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
-              <Trophy className="w-6 h-6" />
-              <span className="text-[11px]">Leaderboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
-              <TrendingUp className="w-6 h-6" />
-              <span className="text-[11px]">Stats</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex flex-col items-center justify-center gap-1 py-2 data-[state=active]:text-amber-600 data-[state=active]:bg-white/50">
-              <BarChart3 className="w-6 h-6" />
-              <span className="text-[11px]">History</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="fixed inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100 via-transparent to-transparent" />
+      <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-multiply bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-red-50 via-transparent to-transparent" />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-6xl mx-auto pb-20">
-        <TabsContent value="leaderboard">
+      {/* Main Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-0 relative z-10">
+        <TabsContent value="leaderboard" className="mt-0 pt-0 animate-in fade-in duration-500 slide-in-from-bottom-4">
           <Leaderboard 
             onAddGame={handleAddGame}
             onShowAnalytics={() => setActiveTab('stats')}
@@ -66,13 +50,63 @@ export default function Home() {
           />
         </TabsContent>
 
-        <TabsContent value="stats" className="p-0">
+        <TabsContent value="stats" className="mt-0 pt-0 animate-in fade-in duration-500 slide-in-from-bottom-4">
           <StatsPage />
         </TabsContent>
 
-        <TabsContent value="analytics" className="p-0">
+        <TabsContent value="analytics" className="mt-0 pt-0 animate-in fade-in duration-500 slide-in-from-bottom-4">
           <Analytics isOpen={true} onClose={() => setActiveTab('leaderboard')} />
         </TabsContent>
+
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-6 left-4 right-4 z-30">
+          <TabsList className="glass-panel h-20 w-full rounded-2xl grid grid-cols-3 p-2 mx-auto max-w-md shadow-2xl border-white/50">
+            <TabsTrigger 
+              value="leaderboard" 
+              className="flex flex-col items-center justify-center gap-1 h-full rounded-xl data-[state=active]:bg-amber-100/50 data-[state=active]:shadow-inner transition-all duration-300 group"
+            >
+              <div className="relative w-8 h-8 group-data-[state=active]:-translate-y-1 transition-transform duration-300">
+                <Image 
+                  src="/icon-leaderboard.png" 
+                  alt="Leaderboard" 
+                  fill
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900/60 group-data-[state=active]:text-amber-800">Leaderboard</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
+              value="stats" 
+              className="flex flex-col items-center justify-center gap-1 h-full rounded-xl data-[state=active]:bg-amber-100/50 data-[state=active]:shadow-inner transition-all duration-300 group"
+            >
+              <div className="relative w-8 h-8 group-data-[state=active]:-translate-y-1 transition-transform duration-300">
+                <Image 
+                  src="/icon-stats.png" 
+                  alt="Stats" 
+                  fill
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900/60 group-data-[state=active]:text-amber-800">Stats</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
+              value="analytics" 
+              className="flex flex-col items-center justify-center gap-1 h-full rounded-xl data-[state=active]:bg-amber-100/50 data-[state=active]:shadow-inner transition-all duration-300 group"
+            >
+              <div className="relative w-8 h-8 group-data-[state=active]:-translate-y-1 transition-transform duration-300">
+                <Image 
+                  src="/icon-history.png" 
+                  alt="History" 
+                  fill
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900/60 group-data-[state=active]:text-amber-800">History</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
       </Tabs>
 
       <GameEntryForm
@@ -87,6 +121,14 @@ export default function Home() {
       />
 
       <Toaster />
-    </>
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <TournamentProvider>
+      <AppContent />
+    </TournamentProvider>
   )
 }

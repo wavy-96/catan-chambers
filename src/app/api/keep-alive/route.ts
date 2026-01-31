@@ -12,7 +12,7 @@ export async function GET() {
     // Perform a simple query to keep the database active
     const { data, error } = await supabase
       .from('players')
-      .select('count')
+      .select('id')
       .limit(1)
     
     if (error) {

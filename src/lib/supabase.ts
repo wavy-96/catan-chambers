@@ -3,13 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
-// Debug logging
-console.log('Supabase Config:', {
-  url: supabaseUrl,
-  hasKey: !!supabaseAnonKey && supabaseAnonKey !== 'placeholder-key',
-  keyLength: supabaseAnonKey.length
-})
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types
@@ -19,11 +12,21 @@ export interface Player {
   created_at: string
 }
 
+export interface Tournament {
+  id: string
+  name: string
+  total_games: number
+  prize_pool: number
+  status: 'active' | 'completed'
+  created_at: string
+}
+
 export interface Game {
   id: string
   game_number: number
   date: string
   winner_id: string
+  tournament_id: string
   created_at: string
 }
 
@@ -47,4 +50,9 @@ export interface PlayerStats {
   win_streak: number
   best_win_streak: number
   updated_at?: string
+}
+
+export interface TournamentPlayerStats extends PlayerStats {
+  id: string
+  tournament_id: string
 }

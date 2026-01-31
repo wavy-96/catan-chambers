@@ -4,10 +4,12 @@ A mobile-first Catan tournament leaderboard app built with Next.js, Supabase, an
 
 ## Features
 
-- **Real-time leaderboard** with player standings and statistics
+- **Multi-Tournament Support** - Track multiple tournaments (Catan 1.0, 2.0, etc.) with independent stats
+- **Real-time leaderboard** with player standings and tournament-specific statistics
+- **Tournament Comparison** - "At this stage" metrics comparing current tournament to previous ones
 - **Interactive analytics** showing cumulative points progression over time
 - **Game entry form** with achievements tracking (Longest Road, Largest Army)
-- **Prize pool tracking** (₹10,000 tournament with probability calculations)
+- **Prize pool tracking** with configurable amounts per tournament
 - **Comprehensive stats** including most wins, achievements, and leaderboard positions
 - **Mobile-optimized interface** with bottom navigation
 - **Animated splash screen** with rotating logo
@@ -22,7 +24,7 @@ A mobile-first Catan tournament leaderboard app built with Next.js, Supabase, an
 
 ## Tech Stack
 
-- **Next.js 14+** (App Router)
+- **Next.js 15+** (App Router)
 - **Supabase** (PostgreSQL, Real-time subscriptions)
 - **shadcn/ui** components
 - **Tailwind CSS** with custom fonts (Roboto, Macondo)
@@ -35,7 +37,8 @@ A mobile-first Catan tournament leaderboard app built with Next.js, Supabase, an
 1. Clone the repository
 2. Install dependencies: `npm install`
 3. Set up environment variables in `.env.local`
-4. Run the development server: `npm run dev`
+4. Run database migrations (see below)
+5. Run the development server: `npm run dev`
 
 ## Environment Variables
 
@@ -48,9 +51,40 @@ ADMIN_PASSWORD=your_admin_password
 
 ## Database Setup
 
-Run the SQL scripts in the following order:
-1. `supabase-schema.sql` - Creates tables and initial data
-2. `supabase-realtime-setup.sql` - Enables real-time subscriptions
+Run the SQL migration scripts in the Supabase SQL Editor in this order:
+
+1. `migrations/001_add_tournaments.sql` - Creates tournaments table and updates schema
+2. `migrations/002_migrate_tournament_data.sql` - Migrates existing data to tournaments
+3. `migrations/003_tournament_triggers.sql` - Creates triggers for automatic stats updates
+
+### Database Schema
+
+The app uses the following tables:
+
+- **tournaments** - Tournament definitions (name, total_games, prize_pool, status)
+- **players** - Player profiles
+- **games** - Individual game records (linked to tournament)
+- **game_scores** - Per-player scores for each game
+- **player_stats** - Global career statistics
+- **tournament_player_stats** - Per-tournament statistics
+
+## Tournament Features
+
+### Creating a New Tournament
+1. Click the tournament selector dropdown
+2. Select "Create New Tournament"
+3. Enter tournament name, total games, and prize pool
+4. Enter admin password to confirm
+
+### Viewing Past Tournaments
+- Use the tournament selector to switch between active and completed tournaments
+- Completed tournaments show in grayscale/muted styling
+- Game entry is disabled for completed tournaments
+
+### Tournament Comparison
+When viewing an active tournament (e.g., Catan 2.0), a comparison card shows:
+- Player standings at the same game count from the previous tournament
+- Point differentials showing who is ahead/behind their previous pace
 
 ## Deployment
 
@@ -62,7 +96,7 @@ The app is configured for deployment on Vercel with:
 
 ## Tournament Rules
 
-- **20 games total** in the tournament
-- **Last place** buys the **winner** something worth ₹10,000
+- Configurable number of games per tournament (default: 20)
+- **Last place** buys the **winner** something worth the prize pool
 - **Real-time probability** calculations for prize outcomes
 - **Achievement tracking** for Longest Road and Largest Army
