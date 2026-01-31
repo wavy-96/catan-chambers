@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Plus, Minus, AlertCircle, Calendar } from 'lucide-react'
 import { supabase, Player } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -197,7 +197,7 @@ export default function GameEntryForm({ isOpen, onClose, onGameAdded }: GameEntr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-[92vw] p-0 overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-orange-50 shadow-2xl">
         <div className="p-5 pb-3 bg-gradient-to-r from-amber-100/50 to-orange-100/50 border-b border-amber-100">
-          <h2 className="text-xl font-bold font-macondo text-gray-800">Record Game Results</h2>
+          <DialogTitle className="text-xl font-bold font-macondo text-gray-800">Record Game Results</DialogTitle>
           <div className="text-sm text-gray-500 font-medium">
             {tournament ? (
               <span className="flex items-center gap-1">

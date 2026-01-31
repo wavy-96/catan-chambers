@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { supabase, Game, GameScore, Player } from '@/lib/supabase'
 import { useTournament } from '@/lib/tournament-context'
 import Image from 'next/image'
+import { Trophy, Trash2 } from 'lucide-react'
 
 interface HistoryDialogProps {
   open: boolean
