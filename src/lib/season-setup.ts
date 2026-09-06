@@ -1,12 +1,24 @@
+export const RULE_METRICS = {
+  roads: "Most Roads",
+  armies: "Most Armies",
+  wins: "Most wins",
+  points: "Most game points",
+  bestStreak: "Longest win streak",
+} as const;
+export type ScoringRule = { metric: keyof typeof RULE_METRICS; points: number };
+export const PLACE_CONTRIBUTIONS = [0, 2000, 4000, 6000] as const;
+export const PRIZE_POOL = PLACE_CONTRIBUTIONS.reduce<number>(
+  (sum, amount) => sum + amount,
+  0,
+);
 export type SeasonSetup = {
   requestId: string;
   name: string;
   totalGames: number;
   prizePool: number;
+  contributions: number[];
   bonusTieRule: "each" | "split" | "none";
-  roadBonus: number;
-  armyBonus: number;
-  houseRules: string[];
+  scoringRules: ScoringRule[];
 };
 export function validateSeasonSetup(value: unknown): SeasonSetup {
   if (!value || typeof value !== "object")
@@ -21,34 +33,58 @@ export function validateSeasonSetup(value: unknown): SeasonSetup {
     throw new Error("Reopen the season setup and try again.");
   if (typeof v.name !== "string" || !v.name.trim() || v.name.trim().length > 60)
     throw new Error("Enter a season name (up to 60 characters).");
-  for (const [key, min, max] of [
-    ["totalGames", 1, 100],
-    ["prizePool", 0, 1000000],
-    ["roadBonus", 0, 100],
-    ["armyBonus", 0, 100],
-  ] as const) {
-    if (
-      !Number.isInteger(v[key]) ||
-      Number(v[key]) < min ||
-      Number(v[key]) > max
-    )
-      throw new Error(
-        `Check ${key === "totalGames" ? "the game count" : key === "prizePool" ? "the prize pool" : "the bonus points"}.`,
-      );
-  }
+  if (
+    !Number.isInteger(v.totalGames) ||
+    Number(v.totalGames) < 1 ||
+    Number(v.totalGames) > 100
+  )
+    throw new Error("Choose between 1 and 100 games.");
+  if (
+    v.prizePool !== PRIZE_POOL ||
+    !Array.isArray(v.contributions) ||
+    v.contributions.length !== 4 ||
+    PLACE_CONTRIBUTIONS.some((n, i) => (v.contributions as unknown[])[i] !== n)
+  )
+    throw new Error(
+      "The pool must be ₹12,000: ₹0, ₹2,000, ₹4,000, and ₹6,000 by place.",
+    );
   if (!["each", "split", "none"].includes(String(v.bonusTieRule)))
     throw new Error("Choose what happens when bonus leaders tie.");
   if (
-    !Array.isArray(v.houseRules) ||
-    v.houseRules.length > 10 ||
-    v.houseRules.some(
-      (r) => typeof r !== "string" || !r.trim() || r.trim().length > 300,
-    )
+    !Array.isArray(v.scoringRules) ||
+    v.scoringRules.length > Object.keys(RULE_METRICS).length
   )
-    throw new Error("Add up to 10 house rules, each under 300 characters.");
+    throw new Error("Choose rules based on recorded stats.");
+  const seen = new Set<string>();
+  const rules: ScoringRule[] = v.scoringRules.map((rule: unknown) => {
+    if (!rule || typeof rule !== "object")
+      throw new Error("Choose a recorded stat for each rule.");
+    const r = rule as Record<string, unknown>;
+    if (
+      typeof r.metric !== "string" ||
+      !Object.prototype.hasOwnProperty.call(RULE_METRICS, r.metric) ||
+      seen.has(r.metric)
+    )
+      throw new Error("Choose each recorded stat only once.");
+    if (
+      !Number.isInteger(r.points) ||
+      Number(r.points) < 1 ||
+      Number(r.points) > 100
+    )
+      throw new Error("Bonus points must be whole numbers from 1 to 100.");
+    seen.add(r.metric);
+    return {
+      metric: r.metric as ScoringRule["metric"],
+      points: Number(r.points),
+    };
+  });
   return {
-    ...v,
+    requestId: v.requestId,
     name: v.name.trim(),
-    houseRules: v.houseRules.map((r) => (r as string).trim()),
-  } as SeasonSetup;
+    totalGames: Number(v.totalGames),
+    prizePool: PRIZE_POOL,
+    contributions: [...PLACE_CONTRIBUTIONS],
+    bonusTieRule: v.bonusTieRule as SeasonSetup["bonusTieRule"],
+    scoringRules: rules,
+  };
 }

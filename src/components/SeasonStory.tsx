@@ -12,7 +12,13 @@ import {
   Flag,
   X,
 } from "lucide-react";
-import { League, Season, seasonRules, standings } from "@/lib/league";
+import {
+  League,
+  Season,
+  seasonRules,
+  standings,
+  seasonPayout,
+} from "@/lib/league";
 import { Avatar } from "./ChambersApp";
 
 export default function SeasonStory({
@@ -81,6 +87,7 @@ export default function SeasonStory({
   const rows = standings(data.players, data.games, season),
     winner = rows[0],
     rules = seasonRules(season);
+  const payout = seasonPayout(season, rows);
   const games = data.games.filter(
     (g) => g.tournament_id === season.id && !g.voided_at,
   );
@@ -264,6 +271,27 @@ export default function SeasonStory({
                 <span>Prize pool</span>
                 <strong>₹{season.prize_pool.toLocaleString("en-IN")}</strong>
               </div>
+              {payout && (
+                <div className="story-settlement">
+                  {payout.pending ? (
+                    <p>Contributions pending: resolve tied places first.</p>
+                  ) : (
+                    <>
+                      {payout.rows.map((p) => (
+                        <p key={p.id}>
+                          <span>{p.name} pays</span>
+                          <strong>₹{p.pays!.toLocaleString("en-IN")}</strong>
+                        </p>
+                      ))}
+                      <p>
+                        {payout.winner}{" "}
+                        {payout.final ? "receives" : "would receive"} ₹
+                        {season.prize_pool.toLocaleString("en-IN")}.
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
         </MotionPage>

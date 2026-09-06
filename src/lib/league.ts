@@ -1,3 +1,4 @@
+import type { ScoringRule } from "./season-setup.ts";
 export type Profile = { id: string; name: string; avatar_url?: string | null };
 export type Season = {
   id: string;
@@ -11,6 +12,8 @@ export type Season = {
   bonus_tie_rule?: string;
   completion_note?: string | null;
   house_rules?: string[];
+  scoring_rules?: ScoringRule[] | null;
+  contributions?: number[] | null;
 };
 export type Score = {
   player_id: string;
@@ -41,7 +44,14 @@ export const COLORS: Record<string, string> = {
 };
 
 export function seasonRules(season: Season) {
+  const bonuses: ScoringRule[] =
+    season.scoring_rules ??
+    ([
+      { metric: "roads", points: season.road_bonus ?? 0 },
+      { metric: "armies", points: season.army_bonus ?? 0 },
+    ].filter((r) => r.points > 0) as ScoringRule[]);
   return {
+    bonuses,
     road: season.road_bonus ?? 0,
     army: season.army_bonus ?? 0,
     tie: season.bonus_tie_rule ?? "pending",
@@ -94,19 +104,25 @@ export function standings(
       total: points,
       rank: 0,
       unresolvedBonus: false,
+      bonusBreakdown: [] as { metric: ScoringRule["metric"]; points: number }[],
     };
   });
-  for (const [field, amount] of [
-    ["roads", rules.road],
-    ["armies", rules.army],
-  ] as const) {
+  // All awards read the base stats; no rule can depend on another bonus.
+  for (const { metric: field, points: amount } of rules.bonuses) {
     const most = Math.max(0, ...rows.map((p) => p[field]));
     if (!most || !amount) continue;
     const leaders = rows.filter((p) => p[field] === most);
     for (const p of leaders) {
-      if (leaders.length === 1 || rules.tie === "each") p.bonus += amount;
-      else if (rules.tie === "split") p.bonus += amount / leaders.length;
-      else if (rules.tie === "pending") p.unresolvedBonus = true;
+      const awarded =
+        leaders.length === 1 || rules.tie === "each"
+          ? amount
+          : rules.tie === "split"
+            ? amount / leaders.length
+            : 0;
+      p.bonus += awarded;
+      if (awarded) p.bonusBreakdown.push({ metric: field, points: awarded });
+      if (leaders.length > 1 && rules.tie === "pending")
+        p.unresolvedBonus = true;
     }
   }
   // Active-season bonuses are provisional; the UI labels them explicitly.
@@ -176,4 +192,30 @@ export function validateResult(value: unknown) {
   )
     throw new Error("Only one player can hold each achievement.");
   return { gameNumber: Number(v.gameNumber), date: v.date, scores };
+}
+
+export function seasonPayout(
+  season: Season,
+  rows: ReturnType<typeof standings>,
+) {
+  if (
+    !season.contributions ||
+    season.contributions.length !== 4 ||
+    rows.length !== 4
+  )
+    return null;
+  const tied = new Set(rows.map((p) => p.rank)).size !== rows.length;
+  const pending = tied || rows.some((p) => p.unresolvedBonus || !p.played);
+  return {
+    pending,
+    final: season.status === "completed",
+    winner: pending ? null : rows[0].name,
+    rows: rows.map((p, i) => ({
+      id: p.id,
+      name: p.name,
+      rank: p.rank,
+      pays: pending ? null : season.contributions![i],
+      receives: pending ? null : i === 0 ? season.prize_pool : 0,
+    })),
+  };
 }

@@ -11,7 +11,14 @@ import {
 import { GameIcon } from "./GameIcon";
 import { MotionPage } from "./LeagueMotion";
 import { League, Season, seasonRules, standings } from "@/lib/league";
-import { validateSeasonSetup } from "@/lib/season-setup";
+import {
+  validateSeasonSetup,
+  RULE_METRICS,
+  PLACE_CONTRIBUTIONS,
+  PRIZE_POOL,
+  type ScoringRule,
+} from "@/lib/season-setup";
+import { ContributionTable } from "./PrizePool";
 
 export function PreviousSeasons({ data }: { data: League }) {
   const seasons = data.seasons.filter(
@@ -95,17 +102,13 @@ export function SeasonRuleList({ season }: { season: Season }) {
   return (
     <div className="season-rule-list">
       <p>Game points count towards the season total.</p>
-      <div>
-        <GameIcon name="road" size={26} />
-        <span>Most Roads</span>
-        <strong>{rules.road ? `+${rules.road}` : "No bonus"}</strong>
-      </div>
-      <div>
-        <GameIcon name="army" size={26} />
-        <span>Most Armies</span>
-        <strong>{rules.army ? `+${rules.army}` : "No bonus"}</strong>
-      </div>
-      {!!(rules.road || rules.army) && (
+      {rules.bonuses.map((rule) => (
+        <div key={rule.metric}>
+          <span>{RULE_METRICS[rule.metric]}</span>
+          <strong>+{rule.points}</strong>
+        </div>
+      ))}
+      {!!rules.bonuses.length && (
         <p>
           {rules.tie === "each"
             ? "Tied leaders each receive the full bonus."
@@ -116,18 +119,11 @@ export function SeasonRuleList({ season }: { season: Season }) {
                 : "The bonus tiebreak rule is not recorded."}
         </p>
       )}
-      {!!season.house_rules?.length && (
-        <>
-          <h3>House rules</h3>
-          <ul>
-            {season.house_rules.map((rule, i) => (
-              <li key={i}>{rule}</li>
-            ))}
-          </ul>
-          <p className="field-note">
-            House rules do not change scores automatically.
-          </p>
-        </>
+      {season.contributions && (
+        <ContributionTable
+          contributions={season.contributions}
+          pool={season.prize_pool}
+        />
       )}
     </div>
   );
@@ -198,34 +194,41 @@ export function NewSeasonDialog({
     ) + 1;
   const [name, setName] = useState(`Catan ${nextSeason}.0`);
   const [count, setCount] = useState("20");
-  const [prize, setPrize] = useState(String(latest?.prize_pool ?? 10000));
-  const [road, setRoad] = useState(String(latest?.road_bonus ?? 10));
-  const [army, setArmy] = useState(String(latest?.army_bonus ?? 10));
+  const [scoringRules, setScoringRules] = useState<
+    { metric: ScoringRule["metric"]; points: string }[]
+  >(
+    (latest
+      ? seasonRules(latest).bonuses
+      : [
+          { metric: "roads" as const, points: 10 },
+          { metric: "armies" as const, points: 10 },
+        ]
+    ).map((r) => ({ metric: r.metric, points: String(r.points) })),
+  );
   const [tie, setTie] = useState(
     ["each", "split", "none"].includes(latest?.bonus_tie_rule || "")
       ? latest.bonus_tie_rule!
       : "",
   );
-  const [houseRules, setHouseRules] = useState<string[]>([
-    ...(latest?.house_rules || []),
-  ]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const hasBonuses = Number(road) > 0 || Number(army) > 0;
+  const hasBonuses = scoringRules.length > 0;
   async function create() {
     setError("");
     try {
-      if ([count, prize, road, army].some((v) => !v.trim()))
+      if ([count, ...scoringRules.map((r) => r.points)].some((v) => !v.trim()))
         throw new Error("Fill in the season details and bonus points.");
       const setup = validateSeasonSetup({
         requestId: requestId.current,
         name,
         totalGames: Number(count),
-        prizePool: Number(prize),
-        roadBonus: Number(road),
-        armyBonus: Number(army),
+        prizePool: PRIZE_POOL,
+        contributions: [...PLACE_CONTRIBUTIONS],
+        scoringRules: scoringRules.map((r) => ({
+          metric: r.metric,
+          points: Number(r.points),
+        })),
         bonusTieRule: hasBonuses ? tie : "none",
-        houseRules,
       });
       setBusy(true);
       const response = await fetch("/api/tournaments", {
@@ -285,46 +288,94 @@ export function NewSeasonDialog({
                   onChange={(e) => setCount(e.target.value)}
                 />
               </label>
-              <label>
-                Prize · INR
-                <input
-                  type="number"
-                  min={0}
-                  max={1000000}
-                  value={prize}
-                  onChange={(e) => setPrize(e.target.value)}
-                />
-              </label>
             </div>
+            <ContributionTable />
           </div>
         )}
         {step === 2 && (
           <div className="setup-fields" onChangeCapture={() => setError("")}>
             <p className="field-note">
-              Bonuses are added to the season total. Set 0 for no bonus.
+              Award a season bonus to the leader in a recorded stat.
             </p>
-            <div className="two-fields">
-              <label>
-                <GameIcon name="road" size={28} /> Most Roads
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={road}
-                  onChange={(e) => setRoad(e.target.value)}
-                />
-              </label>
-              <label>
-                <GameIcon name="army" size={28} /> Most Armies
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={army}
-                  onChange={(e) => setArmy(e.target.value)}
-                />
-              </label>
-            </div>
+            {scoringRules.map((rule, i) => (
+              <div className="scoring-rule-input" key={i}>
+                <label>
+                  Stat
+                  <select
+                    aria-label={`Rule ${i + 1} stat`}
+                    value={rule.metric}
+                    onChange={(e) =>
+                      setScoringRules((rs) =>
+                        rs.map((r, n) =>
+                          n === i
+                            ? {
+                                ...r,
+                                metric: e.target.value as ScoringRule["metric"],
+                              }
+                            : r,
+                        ),
+                      )
+                    }
+                  >
+                    {Object.entries(RULE_METRICS).map(([metric, label]) => (
+                      <option
+                        key={metric}
+                        value={metric}
+                        disabled={scoringRules.some(
+                          (r, n) => n !== i && r.metric === metric,
+                        )}
+                      >
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="rule-points-row">
+                  <label>
+                    Bonus points
+                    <input
+                      aria-label={`Rule ${i + 1} bonus points`}
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={rule.points}
+                      onChange={(e) =>
+                        setScoringRules((rs) =>
+                          rs.map((r, n) =>
+                            n === i ? { ...r, points: e.target.value } : r,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                  <button
+                    className="icon-button"
+                    aria-label={`Remove rule ${i + 1}`}
+                    onClick={() =>
+                      setScoringRules((rs) => rs.filter((_, n) => n !== i))
+                    }
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {scoringRules.length < Object.keys(RULE_METRICS).length && (
+              <button
+                className="secondary-button"
+                onClick={() => {
+                  const metric = (
+                    Object.keys(RULE_METRICS) as ScoringRule["metric"][]
+                  ).find((m) => !scoringRules.some((r) => r.metric === m))!;
+                  setScoringRules((rs) => [...rs, { metric, points: "10" }]);
+                }}
+              >
+                <Plus size={17} /> Add scoring rule
+              </button>
+            )}
+            {!hasBonuses && (
+              <p className="field-note">Game points only. No season bonuses.</p>
+            )}
             {hasBonuses && (
               <>
                 <label htmlFor="tie-rule">If bonus leaders tie</label>
@@ -342,46 +393,6 @@ export function NewSeasonDialog({
                 </select>
               </>
             )}
-            <h3>House rules</h3>
-            {houseRules.map((rule, i) => (
-              <div className="house-rule-input" key={i}>
-                <textarea
-                  aria-label={`House rule ${i + 1}`}
-                  maxLength={300}
-                  rows={2}
-                  value={rule}
-                  placeholder="e.g. No trading before the first roll"
-                  onChange={(e) =>
-                    setHouseRules((rs) =>
-                      rs.map((r, n) => (n === i ? e.target.value : r)),
-                    )
-                  }
-                />
-                <button
-                  type="button"
-                  className="icon-button"
-                  aria-label={`Remove house rule ${i + 1}`}
-                  onClick={() =>
-                    setHouseRules((rs) => rs.filter((_, n) => n !== i))
-                  }
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            ))}
-            {houseRules.length < 10 && (
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => setHouseRules((rs) => [...rs, ""])}
-              >
-                <Plus size={17} /> Add a house rule
-              </button>
-            )}
-            <p className="field-note">
-              House rules are notes for the group. New scoring formulas need an
-              app update.
-            </p>
           </div>
         )}
         {error && (

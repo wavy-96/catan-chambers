@@ -36,13 +36,15 @@ The historical 001–003 migrations assume an existing base schema. Apply `migra
 
 Deploy the authenticated server and configure its secrets when applying this migration: the legacy browser client can no longer read the database directly.
 
-Apply `migrations/005_season_house_rules.sql` before deploying the season setup flow. It adds house-rule notes and an idempotent season-creation RPC. The old RPC remains available for deployment compatibility.
+Apply migrations 005, 006, and 007 in order before deploying the current setup flow. Migration 006 adds structured stat rules, placement contributions, and a validated, idempotent creation RPC. Existing RPCs remain for deployment compatibility. Completed seasons retain their historical rules and pools.
 
 ## Starting a season
 
-The admin's **Start new season** button opens previous-season highlights, season details, then rules. A new season starts with a recap; recording its first game opens the recap and saved rules before score entry. Only one active season is allowed.
+The admin's **Start new season** button opens previous-season highlights, season details, then rules. A new season starts with a recap; recording its first game opens the recap and saved rules before score entry. Only one active season is allowed. The admin can end an active season early with an optional note; game records and planned game count are retained. Closing the season blocks further score entry and reveals Start new season. Season 4 onward uses the new contribution plan; Season 3 keeps its historical ₹10,000 pool.
 
-Road and Army bonuses use explicit whole-number settings (0–100), with a selected rule for ties. These values feed the existing standings calculation. Up to ten house rules are stored as plain text and shown to the group. They are not parsed or applied to scores. A new scoring formula requires an explicit implementation and tests; changes should be agreed before creating the season so past results keep their existing rules.
+Each scoring rule selects a recorded stat: Roads, Armies, wins, game points, or longest win streak, plus a season bonus (1–100). A stat can appear only once. Rules compare base stats derived from non-nullified game records, so bonuses never compound. Tied stat leaders follow the selected full/split/no-bonus policy. Removing every rule gives a base-points-only season; legacy seasons retain their original Road and Army bonuses.
+
+New seasons use a ₹12,000 winner-takes-all pool. Final places contribute ₹0, ₹2,000, ₹4,000, and ₹6,000 respectively; the winner receives ₹12,000. Active-season amounts are projections. Any tied final places or unresolved bonuses leave settlement pending rather than assigning payments by alphabetical order. The app displays amounts only and does not collect or transfer money.
 
 ## Historical import
 

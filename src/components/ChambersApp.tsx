@@ -5,6 +5,9 @@ import {
   SeasonOpeningDialog,
   SeasonRuleList,
 } from "./SeasonSetup";
+import { EndSeasonDialog } from "./EndSeasonDialog";
+import { PrizePool } from "./PrizePool";
+import { RULE_METRICS } from "@/lib/season-setup";
 import { GameIcon } from "./GameIcon";
 
 import { useCallback, useEffect, useState } from "react";
@@ -100,6 +103,7 @@ export default function ChambersApp() {
   const [recording, setRecording] = useState(false),
     [creating, setCreating] = useState(false),
     [opening, setOpening] = useState(false),
+    [ending, setEnding] = useState(false),
     [filter, setFilter] = useState("all"),
     [notice, setNotice] = useState("");
   const load = useCallback(async () => {
@@ -255,6 +259,14 @@ export default function ChambersApp() {
                     <Plus size={18} /> Start new season
                   </button>
                 )}
+              {isAdmin && season.status === "active" && (
+                <button
+                  className="text-button end-season-button"
+                  onClick={() => setEnding(true)}
+                >
+                  <Flag size={16} /> End season
+                </button>
+              )}
               {season.status === "active" && nextNumber === 1 && (
                 <section className="season-opening">
                   <h2>Before game 1</h2>
@@ -298,7 +310,7 @@ export default function ChambersApp() {
               <div className="section-title">
                 <h2>Standings</h2>
                 <span>
-                  {rules.road || rules.army
+                  {rules.bonuses.length
                     ? done
                       ? "Including bonuses"
                       : "Provisional bonuses"
@@ -357,6 +369,17 @@ export default function ChambersApp() {
                             : `${pointsLabel(leader.total - p.total)} behind`}
                       </span>
                     </div>
+                    {p.bonusBreakdown.length > 0 && (
+                      <details className="bonus-breakdown">
+                        <summary>Bonus breakdown</summary>
+                        {p.bonusBreakdown.map((b) => (
+                          <p key={b.metric}>
+                            {RULE_METRICS[b.metric]}{" "}
+                            <strong>+{pointsLabel(b.points)}</strong>
+                          </p>
+                        ))}
+                      </details>
+                    )}
                     {p.unresolvedBonus && (
                       <p className="unresolved">
                         Bonus tied — tiebreak rule pending
@@ -365,13 +388,19 @@ export default function ChambersApp() {
                   </Reveal>
                 ))}
               </section>
-              {(rules.road > 0 || rules.army > 0) && (
+              {rules.bonuses.length > 0 && (
                 <p className="scoring-note">
-                  Base points + {rules.road} for most Roads + {rules.army} for
-                  most Armies.
-                  {!done && " Bonuses settle at the end of the season."}
+                  Game points
+                  {rules.bonuses
+                    .map(
+                      (r) =>
+                        ` + ${r.points} for ${RULE_METRICS[r.metric].toLowerCase()}`,
+                    )
+                    .join("")}
+                  .{!done && " Bonuses settle at the end of the season."}
                 </p>
               )}
+              <PrizePool season={season} rows={rows} />
               <section className="chart-panel">
                 <div className="section-title">
                   <div>
@@ -621,6 +650,20 @@ export default function ChambersApp() {
           setNotice("Game recorded. Standings are up to date.");
         }}
       />
+      {ending && (
+        <EndSeasonDialog
+          season={season}
+          played={games.length}
+          close={() => setEnding(false)}
+          saved={async () => {
+            setEnding(false);
+            await load();
+            setView("season");
+            setNotice("Season ended. You can start a new season.");
+            window.scrollTo({ top: 0, behavior: "instant" });
+          }}
+        />
+      )}
       {opening && (
         <SeasonOpeningDialog
           data={data}

@@ -2203,3 +2203,141 @@ h3,
   flex: 1;
   justify-content: center;
 }
+.scoring-rule-input {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.scoring-rule-input label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.rule-points-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.rule-points-row label {
+  flex: 1;
+}
+.rule-points-row button {
+  margin-bottom: 4px;
+}
+.prize-plan {
+  margin: 12px 0;
+  border: 1px solid #eed7ad;
+  background: #fff5df;
+  border-radius: 18px;
+  padding: 16px;
+  min-width: 0;
+}
+.prize-plan-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+.prize-plan h3 {
+  font-size: 20px;
+}
+.prize-plan-heading > strong {
+  font-family: var(--font-macondo);
+  font-weight: 400;
+  font-size: 25px;
+  color: var(--gold);
+}
+.prize-plan table,
+.season-payout > table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 16px;
+}
+.prize-plan th,
+.prize-plan td,
+.season-payout th,
+.season-payout td {
+  text-align: left;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.prize-plan th:last-child,
+.prize-plan td:last-child,
+.season-payout th:last-child,
+.season-payout td:last-child {
+  text-align: right;
+}
+.prize-plan p {
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+.season-payout {
+  margin: 24px 0;
+}
+.season-payout h2 {
+  font-size: 26px;
+}
+.season-payout > h3 {
+  font-size: 21px;
+  margin-top: 20px;
+}
+.season-payout > p {
+  margin-top: 12px;
+}
+.bonus-breakdown {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-size: 14px;
+}
+.bonus-breakdown summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.bonus-breakdown p {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.season-rule-list > .prize-plan {
+  display: block;
+  padding: 16px;
+}
+.prize-plan {
+  color: var(--foreground);
+}
+.story-settlement {
+  border-top: 1px solid var(--story-line);
+  margin-top: 20px;
+  padding-top: 10px;
+  font-size: 16px;
+}
+.story-settlement p {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.end-season-button {
+  margin: -8px 0 18px auto;
+  padding: 8px 0;
+  width: auto;
+  font-size: 16px;
+}
+.end-season-note {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  font: inherit;
+  font-size: 17px;
+}

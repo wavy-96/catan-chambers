@@ -25,15 +25,14 @@ export async function POST(req: NextRequest) {
     );
   try {
     const setup = validateSeasonSetup(await req.json());
-    const { data, error } = await database().rpc("create_chambers_season_v2", {
+    const { data, error } = await database().rpc("create_chambers_season_v3", {
       p_request_id: setup.requestId,
       p_name: setup.name,
       p_total_games: setup.totalGames,
       p_prize_pool: setup.prizePool,
       p_tie: setup.bonusTieRule,
-      p_road: setup.roadBonus,
-      p_army: setup.armyBonus,
-      p_house_rules: setup.houseRules,
+      p_scoring_rules: setup.scoringRules,
+      p_contributions: setup.contributions,
     });
     if (error)
       throw new Error(

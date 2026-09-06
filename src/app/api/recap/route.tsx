@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
 import { currentRole, loadLeague } from "@/lib/server";
-import { standings, seasonRules, COLORS } from "@/lib/league";
+import { standings, seasonRules, COLORS, seasonPayout } from "@/lib/league";
 // Keep the exported artwork identical to the app without network font requests.
 const assets = Promise.all([
   readFile(join(process.cwd(), "src/assets/fonts/Macondo-Regular.ttf")),
@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     );
   if (!winner || !games.length)
     return NextResponse.json({ error: "No games to recap." }, { status: 400 });
+  const payout = seasonPayout(season, rows);
   const biggest = Math.max(
     ...games.flatMap((g) => g.game_scores.map((s) => s.points)),
   );
@@ -318,6 +319,14 @@ export async function GET(req: NextRequest) {
                   <small style={{ fontSize: 23, color: theme.muted }}>
                     {p.bonus ? `${p.points} + ${p.bonus} bonus` : "points"}
                   </small>
+                  {payout && !payout.pending && (
+                    <small style={{ fontSize: 23, color: theme.muted }}>
+                      Pays INR{" "}
+                      {payout.rows
+                        .find((row) => row.id === p.id)!
+                        .pays!.toLocaleString("en-IN")}
+                    </small>
+                  )}
                 </div>
               </div>
             ))}
@@ -350,6 +359,13 @@ export async function GET(req: NextRequest) {
               INR {season.prize_pool.toLocaleString("en-IN")}
             </b>
           </div>
+          {payout && (
+            <div style={{ display: "flex", fontSize: 30, marginTop: 24 }}>
+              {payout.pending
+                ? "Contributions pending: resolve tied places first."
+                : `${payout.winner} ${payout.final ? "receives" : "would receive"} INR ${season.prize_pool.toLocaleString("en-IN")}.`}
+            </div>
+          )}
         </div>
       )}
       <div
