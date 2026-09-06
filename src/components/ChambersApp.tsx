@@ -6,6 +6,7 @@ import {
   SeasonRuleList,
 } from "./SeasonSetup";
 import { EndSeasonDialog } from "./EndSeasonDialog";
+import { AdminAccessDialog } from "./AdminAccessDialog";
 import { PrizePool } from "./PrizePool";
 import { RULE_METRICS } from "@/lib/season-setup";
 import { GameIcon } from "./GameIcon";
@@ -101,6 +102,7 @@ export default function ChambersApp() {
     [view, setView] = useState<View>("season");
   const [recording, setRecording] = useState(false),
     [creating, setCreating] = useState(false),
+    [unlocking, setUnlocking] = useState(false),
     [opening, setOpening] = useState(false),
     [ending, setEnding] = useState(false),
     [filter, setFilter] = useState("all"),
@@ -248,16 +250,16 @@ export default function ChambersApp() {
                   </span>
                 </div>
               </section>
-              {isAdmin &&
-                done &&
-                !data.seasons.some((s) => s.status === "active") && (
-                  <button
-                    className="secondary-button full-width new-season-button"
-                    onClick={() => setCreating(true)}
-                  >
-                    <Plus size={18} /> Start new season
-                  </button>
-                )}
+              {done && !data.seasons.some((s) => s.status === "active") && (
+                <button
+                  className="secondary-button full-width new-season-button"
+                  onClick={() =>
+                    isAdmin ? setCreating(true) : setUnlocking(true)
+                  }
+                >
+                  <Plus size={18} /> Start new season
+                </button>
+              )}
               {isAdmin && season.status === "active" && (
                 <button
                   className="text-button end-season-button"
@@ -664,6 +666,16 @@ export default function ChambersApp() {
           record={() => {
             setOpening(false);
             setRecording(true);
+          }}
+        />
+      )}
+      {unlocking && (
+        <AdminAccessDialog
+          close={() => setUnlocking(false)}
+          unlocked={async () => {
+            await load();
+            setUnlocking(false);
+            setCreating(true);
           }}
         />
       )}
