@@ -460,17 +460,20 @@ export default function ChambersApp() {
                   {games.length} matches in {season.name}
                 </p>
               </section>
+              <div className="section-title">
+                <h2 id="game-wins-heading">Game wins</h2>
+              </div>
               <div
                 className="filter-chips"
                 role="group"
-                aria-label="Filter games by winner"
+                aria-labelledby="game-wins-heading"
                 tabIndex={0}
               >
                 <button
                   className={filter === "all" ? "active" : ""}
                   onClick={() => setFilter("all")}
                 >
-                  Everyone
+                  All
                 </button>
                 {data.players.map((p) => (
                   <button
@@ -478,7 +481,7 @@ export default function ChambersApp() {
                     key={p.id}
                     onClick={() => setFilter(p.id)}
                   >
-                    {p.name} wins
+                    {p.name}
                   </button>
                 ))}
               </div>
