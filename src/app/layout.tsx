@@ -1,24 +1,50 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
+import localFont from "next/font/local";
+const crimson = localFont({
+  src: [
+    {
+      path: "../assets/fonts/CrimsonPro-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../assets/fonts/CrimsonPro-Semibold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+  ],
+  variable: "--font-crimson",
+  display: "swap",
+});
+const macondo = localFont({
+  src: "../assets/fonts/Macondo-Regular.ttf",
+  weight: "400",
+  variable: "--font-macondo",
+  display: "swap",
+});
 export const metadata: Metadata = {
   title: "Catan Chambers",
-  description: "Earn your bragging rights in the chamber",
+  description: "Catan scores, seasons, and player stats.",
+  robots: { index: false, follow: false },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Chambers",
+  },
 };
-
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#fcf9f2",
+};
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Macondo&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-crimson antialiased">
+      <body className={`${crimson.variable} ${macondo.variable}`}>
         {children}
       </body>
     </html>

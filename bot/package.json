@@ -1,0 +1,19 @@
+{
+  "name": "catan-chambers-whatsapp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types --env-file=.env index.mjs",
+    "test": "node --experimental-strip-types --test test.mjs"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "1.34.7",
+    "qrcode": "1.5.4"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "overrides": {
+    "puppeteer": "25.10.0"
+  }
+}

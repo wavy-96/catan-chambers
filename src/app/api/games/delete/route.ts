@@ -1,46 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
-const adminPassword = process.env.ADMIN_PASSWORD as string
-
+import { NextRequest, NextResponse } from "next/server";
+import { currentRole, database } from "@/lib/server";
 export async function POST(req: NextRequest) {
+  if ((await currentRole()) !== "admin")
+    return NextResponse.json(
+      { error: "Only Tamim can nullify games." },
+      { status: 403 },
+    );
+  if (req.headers.get("origin") !== req.nextUrl.origin)
+    return NextResponse.json(
+      { error: "Invalid request origin." },
+      { status: 403 },
+    );
   try {
-    const { gameId, password } = await req.json()
-    if (!gameId || !password) {
-      return NextResponse.json({ error: 'Missing gameId or password' }, { status: 400 })
-    }
-    if (!adminPassword) {
-      return NextResponse.json({ error: 'Server missing ADMIN_PASSWORD' }, { status: 500 })
-    }
-    if (password !== adminPassword) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
-
-    // Delete scores first due to FK
-    const { error: scoreErr } = await supabase
-      .from('game_scores')
-      .delete()
-      .eq('game_id', gameId)
-    if (scoreErr) {
-      return NextResponse.json({ error: scoreErr.message }, { status: 500 })
-    }
-
-    const { error: gameErr } = await supabase
-      .from('games')
-      .delete()
-      .eq('id', gameId)
-    if (gameErr) {
-      return NextResponse.json({ error: gameErr.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ ok: true })
+    const { gameId, reason } = await req.json();
+    if (
+      typeof reason !== "string" ||
+      reason.trim().length < 3 ||
+      reason.length > 500
+    )
+      throw new Error("Add a brief reason for nullifying this game.");
+    const { error } = await database().rpc("nullify_chambers_game", {
+      p_game_id: gameId,
+      p_reason: reason.trim(),
+    });
+    if (error)
+      throw new Error(
+        error.code === "PGRST202"
+          ? "Nullifying is awaiting the database upgrade."
+          : error.message,
+      );
+    return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Unknown error' }, { status: 500 })
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Could not nullify game." },
+      { status: 400 },
+    );
   }
 }
-
-
