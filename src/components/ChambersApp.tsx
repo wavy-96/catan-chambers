@@ -35,7 +35,6 @@ import {
   Flag,
   Hexagon,
   History,
-  LogOut,
   Plus,
   RefreshCw,
   X,
@@ -586,16 +585,6 @@ export default function ChambersApp() {
                   Start new season
                 </button>
               )}
-              <button
-                className="sign-out"
-                onClick={async () => {
-                  await fetch("/api/session", { method: "DELETE" });
-                  location.assign("/login");
-                }}
-              >
-                <LogOut size={16} />
-                Sign out
-              </button>
             </>
           )}
         </MotionPage>
