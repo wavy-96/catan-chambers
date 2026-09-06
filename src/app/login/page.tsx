@@ -1,24 +1,21 @@
 "use client";
 import { useState } from "react";
 import { MotionPage } from "@/components/LeagueMotion";
-import { ArrowRight, LockKeyhole, Hexagon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { GameIcon } from "@/components/GameIcon";
 export default function Login() {
   const [password, setPassword] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   return (
     <main className="login-screen">
-      <div className="login-orbit" aria-hidden="true">
-        <Hexagon />
-      </div>
       <MotionPage className="login-content">
-        <p className="eyebrow">PRIVATE CATAN LEAGUE</p>
+        <GameIcon name="colonist" size={112} className="login-artwork" />
         <h1>
           Catan
           <br />
           <em>Chambers</em>
         </h1>
-        <p className="login-description">Scores, seasons, and player stats.</p>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -59,9 +56,6 @@ export default function Login() {
             </p>
           )}
         </form>
-        <p className="private-note">
-          <LockKeyhole size={14} /> Shared with your group.
-        </p>
       </MotionPage>
     </main>
   );

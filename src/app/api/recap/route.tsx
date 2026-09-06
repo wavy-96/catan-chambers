@@ -1,7 +1,17 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
 import { currentRole, loadLeague } from "@/lib/server";
 import { standings, seasonRules, COLORS } from "@/lib/league";
+// Keep the exported artwork identical to the app without network font requests.
+const assets = Promise.all([
+  readFile(join(process.cwd(), "src/assets/fonts/Macondo-Regular.ttf")),
+  readFile(join(process.cwd(), "src/assets/fonts/CrimsonPro-Regular.ttf")),
+  readFile(join(process.cwd(), "src/assets/fonts/CrimsonPro-Semibold.ttf")),
+  readFile(join(process.cwd(), "public/colonist.png")),
+  readFile(join(process.cwd(), "public/icon-crown.png")),
+]);
 export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   if (!(await currentRole()))
@@ -27,7 +37,7 @@ export async function GET(req: NextRequest) {
   );
   const awards = [
     {
-      label: "HIGHEST GAME SCORE",
+      label: "Highest game score",
       value: `${biggest} points`,
       names: [
         ...new Set(
@@ -43,11 +53,11 @@ export async function GET(req: NextRequest) {
       [
         {
           field: "bestStreak",
-          label: "LONGEST WIN STREAK",
+          label: "Longest win streak",
           suffix: "wins in a row",
         },
-        { field: "roads", label: "MOST ROADS", suffix: "Longest Roads" },
-        { field: "armies", label: "MOST ARMIES", suffix: "Largest Armies" },
+        { field: "roads", label: "Most Roads", suffix: "Longest Roads" },
+        { field: "armies", label: "Most Armies", suffix: "Largest Armies" },
       ] as const
     ).map((a) => {
       const max = Math.max(...rows.map((p) => p[a.field]));
@@ -91,245 +101,291 @@ export async function GET(req: NextRequest) {
             muted: "#657083",
             line: "#e1d6c4",
           };
+  const [macondo, crimson, crimsonBold, colonist, crown] = await assets;
+  const fontData = (buffer: Buffer) =>
+    buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    ) as ArrayBuffer;
   return new ImageResponse(
-    (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        background: theme.bg,
+        color: theme.ink,
+        padding: "90px 80px",
+        fontFamily: "Crimson",
+      }}
+    >
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          height: "100%",
-          background: theme.bg,
-          color: theme.ink,
-          padding: "90px 80px",
-          fontFamily: "sans-serif",
+          justifyContent: "space-between",
+          fontSize: 27,
+          alignItems: "center",
         }}
       >
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            fontSize: 27,
-            letterSpacing: 4,
+            alignItems: "center",
+            gap: 20,
+            fontFamily: "Macondo",
+            fontSize: 36,
           }}
         >
-          <span>CATAN CHAMBERS</span>
-          <span>{season.name}</span>
+          {/* ImageResponse renders an img directly into the PNG. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/png;base64,${colonist.toString("base64")}`}
+            width={76}
+            height={76}
+            alt=""
+          />
+          Catan Chambers
         </div>
+        <span>{season.name}</span>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          fontSize: 104,
+          fontWeight: 600,
+          lineHeight: 1.05,
+          fontFamily: "Macondo",
+          letterSpacing: 0,
+          marginTop: 115,
+          marginBottom: 75,
+          maxWidth: 880,
+        }}
+      >
+        {title}
+      </div>
+      {slide === 0 && (
         <div
-          style={{
-            display: "flex",
-            fontSize: 104,
-            fontWeight: 700,
-            lineHeight: 1.05,
-            letterSpacing: -5,
-            marginTop: 115,
-            marginBottom: 75,
-            maxWidth: 880,
-          }}
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
         >
-          {title}
-        </div>
-        {slide === 0 && (
           <div
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+            style={{
+              display: "flex",
+              fontSize: 285,
+              fontFamily: "Macondo",
+              letterSpacing: -4,
+              fontWeight: 600,
+              color: theme.accent,
+              lineHeight: 1,
+            }}
           >
-            <div
-              style={{
-                display: "flex",
-                fontSize: 285,
-                letterSpacing: -15,
-                fontWeight: 700,
-                color: theme.accent,
-                lineHeight: 1,
-              }}
-            >
-              {winner.total}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 28,
-                letterSpacing: 5,
-                color: theme.muted,
-                marginTop: 20,
-              }}
-            >
-              SEASON POINTS
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                borderTop: `2px solid ${theme.line}`,
-                borderBottom: `2px solid ${theme.line}`,
-                padding: "50px 0",
-                marginTop: 80,
-              }}
-            >
-              {[
-                { n: winner.wins, label: "WINS" },
-                {
-                  n: `${Math.round((winner.wins / winner.played) * 100)}%`,
-                  label: "WIN RATE",
-                },
-                {
-                  n: `+${winner.total - (rows[1]?.total || 0)}`,
-                  label: "MARGIN",
-                },
-              ].map((v) => (
-                <div
-                  key={v.label}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <b style={{ fontSize: 70 }}>{v.n}</b>
-                  <span style={{ fontSize: 23, marginTop: 12 }}>{v.label}</span>
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 40,
-                lineHeight: 1.5,
-                marginTop: 80,
-              }}
-            >
-              Season champion · {games.length} games
-            </div>
+            {winner.total}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`data:image/png;base64,${crown.toString("base64")}`}
+              width={140}
+              height={140}
+              alt=""
+              style={{ marginLeft: 36, marginTop: 50 }}
+            />
           </div>
-        )}
-        {slide === 1 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 35 }}>
-            {awards.map((a) => (
+          <div
+            style={{
+              display: "flex",
+              fontSize: 28,
+
+              color: theme.muted,
+              marginTop: 20,
+            }}
+          >
+            Season points
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: `2px solid ${theme.line}`,
+              borderBottom: `2px solid ${theme.line}`,
+              padding: "50px 0",
+              marginTop: 80,
+            }}
+          >
+            {[
+              { n: winner.wins, label: "Wins" },
+              {
+                n: `${Math.round((winner.wins / winner.played) * 100)}%`,
+                label: "Win rate",
+              },
+              {
+                n: `+${winner.total - (rows[1]?.total || 0)}`,
+                label: "Margin",
+              },
+            ].map((v) => (
               <div
-                key={a.label}
+                key={v.label}
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  borderBottom: `2px solid ${theme.line}`,
-                  paddingBottom: 35,
+                  alignItems: "center",
                 }}
               >
-                <span
-                  style={{ display: "flex", fontSize: 25, letterSpacing: 4 }}
-                >
-                  {a.label}
-                </span>
-                <b style={{ display: "flex", fontSize: 58, marginTop: 15 }}>
-                  {a.value}
-                </b>
-                <span style={{ display: "flex", fontSize: 33, marginTop: 12 }}>
-                  {a.names}
-                </span>
+                <b style={{ fontSize: 70 }}>{v.n}</b>
+                <span style={{ fontSize: 23, marginTop: 12 }}>{v.label}</span>
               </div>
             ))}
           </div>
-        )}
-        {slide === 2 && (
           <div
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+            style={{
+              display: "flex",
+              fontSize: 40,
+              lineHeight: 1.5,
+              marginTop: 80,
+            }}
           >
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {rows.map((p) => (
-                <div
-                  key={p.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: `2px solid ${theme.line}`,
-                    padding: "35px 0",
-                    gap: 30,
-                  }}
-                >
-                  <span style={{ fontSize: 32, color: theme.muted }}>
-                    {p.rank}
-                  </span>
-                  <span
-                    style={{
-                      display: "flex",
-                      width: 80,
-                      height: 80,
-                      background: COLORS[p.name] || theme.accent,
-                      color: "#ffffff",
-                      borderRadius: 24,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 44,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {p.name[0]}
-                  </span>
-                  <strong style={{ display: "flex", flex: 1, fontSize: 45 }}>
-                    {p.name}
-                  </strong>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <b style={{ fontSize: 62 }}>{p.total}</b>
-                    <small style={{ fontSize: 23, color: theme.muted }}>
-                      {p.bonus ? `${p.points} + ${p.bonus} bonus` : "points"}
-                    </small>
-                  </div>
-                </div>
-              ))}
+            Season champion · {games.length} games
+          </div>
+        </div>
+      )}
+      {slide === 1 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 35 }}>
+          {awards.map((a) => (
+            <div
+              key={a.label}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                borderBottom: `2px solid ${theme.line}`,
+                paddingBottom: 35,
+              }}
+            >
+              <span style={{ display: "flex", fontSize: 30 }}>{a.label}</span>
+              <b style={{ display: "flex", fontSize: 58, marginTop: 15 }}>
+                {a.value}
+              </b>
+              <span style={{ display: "flex", fontSize: 33, marginTop: 12 }}>
+                {a.names}
+              </span>
             </div>
-            {seasonRules(season).note && (
+          ))}
+        </div>
+      )}
+      {slide === 2 && (
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {rows.map((p) => (
               <div
+                key={p.id}
                 style={{
                   display: "flex",
-                  marginTop: 50,
-                  padding: 30,
-                  border: `2px dashed ${theme.line}`,
-                  fontSize: 33,
-                  lineHeight: 1.4,
+                  alignItems: "center",
+                  borderBottom: `2px solid ${theme.line}`,
+                  padding: "35px 0",
+                  gap: 30,
                 }}
               >
-                {seasonRules(season).note}
+                <span style={{ fontSize: 32, color: theme.muted }}>
+                  {p.rank}
+                </span>
+                <span
+                  style={{
+                    display: "flex",
+                    width: 80,
+                    height: 80,
+                    background: COLORS[p.name] || theme.accent,
+                    color: "#ffffff",
+                    borderRadius: 24,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 44,
+                    fontWeight: 600,
+                  }}
+                >
+                  {p.name[0]}
+                </span>
+                <strong style={{ display: "flex", flex: 1, fontSize: 45 }}>
+                  {p.name}
+                </strong>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <b style={{ fontSize: 62 }}>{p.total}</b>
+                  <small style={{ fontSize: 23, color: theme.muted }}>
+                    {p.bonus ? `${p.points} + ${p.bonus} bonus` : "points"}
+                  </small>
+                </div>
               </div>
-            )}
+            ))}
+          </div>
+          {seasonRules(season).note && (
             <div
               style={{
                 display: "flex",
-                marginTop: 55,
-                justifyContent: "space-between",
-                alignItems: "center",
-                fontSize: 29,
+                marginTop: 50,
+                padding: 30,
+                border: `2px dashed ${theme.line}`,
+                fontSize: 33,
+                lineHeight: 1.4,
               }}
             >
-              <span>PRIZE POOL</span>
-              <b style={{ fontSize: 58 }}>
-                INR {season.prize_pool.toLocaleString("en-IN")}
-              </b>
+              {seasonRules(season).note}
             </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              marginTop: 55,
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 29,
+            }}
+          >
+            <span>Prize pool</span>
+            <b style={{ fontSize: 58 }}>
+              INR {season.prize_pool.toLocaleString("en-IN")}
+            </b>
           </div>
-        )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "auto",
-            fontSize: 24,
-            letterSpacing: 3,
-          }}
-        >
-          <span>{games.length} GAMES · CATAN CHAMBERS</span>
-          <span>0{slide + 1} / 03</span>
         </div>
+      )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginTop: "auto",
+          fontSize: 24,
+        }}
+      >
+        <span>0{slide + 1} / 03</span>
       </div>
-    ),
+    </div>,
     {
       width: 1080,
       height: 1920,
+      fonts: [
+        {
+          name: "Macondo",
+          data: fontData(macondo),
+          weight: 400,
+          style: "normal",
+        },
+        {
+          name: "Crimson",
+          data: fontData(crimson),
+          weight: 400,
+          style: "normal",
+        },
+        {
+          name: "Crimson",
+          data: fontData(crimsonBold),
+          weight: 600,
+          style: "normal",
+        },
+      ],
       headers: {
         "Cache-Control": "private, no-store",
         "Content-Disposition": `attachment; filename="chambers-recap-${slide + 1}.png"`,

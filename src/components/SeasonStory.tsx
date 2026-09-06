@@ -1,4 +1,5 @@
 "use client";
+import { GameIcon } from "./GameIcon";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { MotionPage, AnimatedNumber } from "./LeagueMotion";
@@ -8,11 +9,7 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
-  Crown,
   Flag,
-  Route,
-  Shield,
-  Trophy,
   X,
 } from "lucide-react";
 import { League, Season, seasonRules, standings } from "@/lib/league";
@@ -125,7 +122,7 @@ export default function SeasonStory({
       </div>
       <header className="story-header">
         <span>
-          CATAN CHAMBERS <b> / </b>
+          Catan Chambers <b> / </b>
           {season.name.replace("Catan ", "S").replace(".0", "")}
         </span>
         <Link href="/" aria-label="Close season recap">
@@ -138,32 +135,32 @@ export default function SeasonStory({
             <>
               <p className="eyebrow">
                 {season.status === "completed"
-                  ? "SEASON CHAMPION"
-                  : "CURRENT LEADER"}
+                  ? "Season champion"
+                  : "Current leader"}
               </p>
               <h1>{winner.name}</h1>
               <div className="story-crown">
-                <Crown size={48} />
+                <GameIcon name="crown" size={48} />
                 <Avatar player={winner} large />
               </div>
               <div className="story-hero-number">
                 <AnimatedNumber value={winner.total} />
-                <span>SEASON POINTS</span>
+                <span>Season points</span>
               </div>
               <div className="story-metrics">
                 <div>
                   <strong>{winner.wins}</strong>
-                  <span>WINS</span>
+                  <span>Wins</span>
                 </div>
                 <div>
                   <strong>
                     {Math.round((winner.wins / winner.played) * 100)}%
                   </strong>
-                  <span>WIN RATE</span>
+                  <span>Win rate</span>
                 </div>
                 <div>
                   <strong>+{winner.total - (rows[1]?.total || 0)}</strong>
-                  <span>WINNING MARGIN</span>
+                  <span>Winning margin</span>
                 </div>
               </div>
               <p className="story-caption">
@@ -173,13 +170,12 @@ export default function SeasonStory({
           )}
           {slide === 1 && (
             <>
-              <p className="eyebrow">KEY STATS</p>
               <h1>Season highlights</h1>
               <div className="story-highlights">
                 <div>
-                  <Trophy />
+                  <GameIcon name="chalice" size={24} />
                   <span>
-                    <small>HIGHEST GAME SCORE</small>
+                    <small>Highest game score</small>
                     <strong>{largest} points</strong>
                     <p>
                       {[
@@ -199,9 +195,9 @@ export default function SeasonStory({
                   </span>
                 </div>
                 <div>
-                  <Crown />
+                  <GameIcon name="crown" size={24} />
                   <span>
-                    <small>LONGEST WIN STREAK</small>
+                    <small>Longest win streak</small>
                     <strong>{streak} wins in a row</strong>
                     <p>
                       {rows
@@ -212,9 +208,9 @@ export default function SeasonStory({
                   </span>
                 </div>
                 <div>
-                  <Route />
+                  <GameIcon name="road" size={24} />
                   <span>
-                    <small>MOST ROADS</small>
+                    <small>Most Roads</small>
                     <strong>{roads} Longest Roads</strong>
                     <p>
                       {rows
@@ -225,9 +221,9 @@ export default function SeasonStory({
                   </span>
                 </div>
                 <div>
-                  <Shield />
+                  <GameIcon name="army" size={24} />
                   <span>
-                    <small>MOST ARMIES</small>
+                    <small>Most Armies</small>
                     <strong>{armies} Largest Armies</strong>
                     <p>
                       {rows
@@ -242,7 +238,6 @@ export default function SeasonStory({
           )}
           {slide === 2 && (
             <>
-              <p className="eyebrow">SEASON RESULTS</p>
               <h1>Final standings</h1>
               <div className="story-standings">
                 {rows.map((p) => (
@@ -266,7 +261,7 @@ export default function SeasonStory({
                 </div>
               )}
               <div className="story-prize">
-                <span>PRIZE POOL</span>
+                <span>Prize pool</span>
                 <strong>₹{season.prize_pool.toLocaleString("en-IN")}</strong>
               </div>
             </>
@@ -274,10 +269,6 @@ export default function SeasonStory({
         </MotionPage>
       </AnimatePresence>
       <footer className="story-footer">
-        <div>
-          <span>{season.name.toUpperCase()}</span>
-          <span>{games.length} GAMES · CATAN CHAMBERS</span>
-        </div>
         <div className="story-controls">
           <button
             className="story-step"
@@ -342,11 +333,6 @@ export default function SeasonStory({
             <ChevronRight size={23} />
           </button>
         </div>
-        <p className="story-share-note">
-          {canShareImage
-            ? "Choose WhatsApp, Messages, or another app."
-            : "Save this image to share in WhatsApp or Messages."}
-        </p>
         {canShareImage && (
           <button
             className="story-download"

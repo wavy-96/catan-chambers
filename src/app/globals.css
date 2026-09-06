@@ -45,7 +45,7 @@ body {
     radial-gradient(ellipse at 100% 0, #fae9c6 0, transparent 430px),
     var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-crimson), Georgia, serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
 }
@@ -148,7 +148,7 @@ input::placeholder {
 }
 .brand-mark > span {
   position: absolute;
-  font-size: 13px;
+  font-size: 15px;
   top: 1px;
   left: 8px;
 }
@@ -187,7 +187,7 @@ input::placeholder {
   pointer-events: none;
 }
 .status-pill {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--gold);
   font-weight: 500;
   display: flex;
@@ -207,7 +207,7 @@ input::placeholder {
   background: #ffffff;
 }
 .eyebrow {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2.1px;
   font-weight: 650;
   color: #657083;
@@ -228,7 +228,7 @@ h1 em {
   display: flex;
   gap: 9px;
   align-items: center;
-  font-size: 13px;
+  font-size: 15px;
   color: #657083;
   margin-bottom: 25px;
 }
@@ -259,7 +259,7 @@ h1 em {
 }
 .recap-link small {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 5px;
   color: #63421c;
 }
@@ -276,7 +276,7 @@ h1 em {
   padding: 13px 14px;
   border: 1px dashed #e6ded1;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
   color: #8b591c;
   margin-bottom: 24px;
@@ -298,10 +298,10 @@ h1 em {
 }
 .section-title > span {
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
 }
 .section-title .eyebrow {
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 7px;
 }
 .standings-list {
@@ -325,7 +325,7 @@ h1 em {
   gap: 11px;
 }
 .rank {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
   width: 18px;
   font-variant-numeric: tabular-nums;
@@ -373,7 +373,7 @@ h1 em {
 }
 .player-name > span {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
   margin-top: 5px;
 }
@@ -394,7 +394,7 @@ h1 em {
 }
 .point-total small {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.8px;
   color: #657083;
   margin-top: 5px;
@@ -415,7 +415,7 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
 }
 .standing-detail .bonus-label {
@@ -427,12 +427,12 @@ h1 em {
 }
 .scoring-note {
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.65;
   margin-top: 13px;
 }
 .unresolved {
-  font-size: 12px;
+  font-size: 14px;
   color: #8b591c;
   padding-top: 10px;
 }
@@ -457,7 +457,7 @@ h1 em {
 }
 .chart-legend span {
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -482,7 +482,7 @@ h1 em {
 }
 .last-game small {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
   letter-spacing: 1.5px;
 }
@@ -529,7 +529,7 @@ h1 em {
   min-height: 49px;
 }
 .bottom-nav span {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 .bottom-nav .active {
@@ -564,7 +564,7 @@ h1 em {
   color: var(--gold);
 }
 .award-card > span {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
 }
 .award-card > strong {
@@ -573,7 +573,7 @@ h1 em {
   letter-spacing: -1px;
 }
 .award-card > small {
-  font-size: 13px;
+  font-size: 15px;
   color: #263041;
 }
 .head-to-head {
@@ -590,7 +590,7 @@ h1 em {
 }
 .versus-pickers span {
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
 }
 .versus-pickers select {
   font-size: 14px;
@@ -642,7 +642,7 @@ h1 em {
 }
 .form-row > strong {
   flex: 1;
-  font-size: 13px;
+  font-size: 15px;
 }
 .form-row > div {
   display: flex;
@@ -653,7 +653,7 @@ h1 em {
   place-items: center;
   width: 25px;
   height: 30px;
-  font-size: 12px;
+  font-size: 14px;
   background: #f2ede4;
   border-radius: 6px;
   color: #657083;
@@ -663,11 +663,11 @@ h1 em {
   color: #63421c;
 }
 .form-row > span {
-  font-size: 13px;
+  font-size: 15px;
   margin-left: 5px;
 }
 .form-row small {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
 }
 .comparison-row {
@@ -675,7 +675,7 @@ h1 em {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  font-size: 13px;
+  font-size: 15px;
   padding: 14px 0;
   border-bottom: 1px solid #e6ded1;
 }
@@ -708,7 +708,7 @@ h1 em {
   color: #657083;
   padding: 11px 15px;
   border-radius: 30px;
-  font-size: 13px;
+  font-size: 15px;
   min-height: 42px;
 }
 .filter-chips .active {
@@ -731,7 +731,7 @@ h1 em {
   display: flex;
   justify-content: space-between;
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
 }
 .game-card h2 {
@@ -760,7 +760,7 @@ h1 em {
   border: 0;
 }
 .game-score-grid span {
-  font-size: 12px;
+  font-size: 14px;
 }
 .game-score-grid strong {
   font-size: 25px;
@@ -775,7 +775,7 @@ h1 em {
   display: block;
   margin: 17px 0 0 auto;
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px 0 4px 10px;
   min-height: 36px;
 }
@@ -807,12 +807,12 @@ h1 em {
   font-size: 23px;
 }
 .career-card small {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
   font-weight: 400;
 }
 .career-card > span:last-child {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
 }
 .archive-row {
@@ -837,7 +837,7 @@ h1 em {
 .archive-row small {
   display: block;
   color: #657083;
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 5px;
 }
 .primary-button,
@@ -875,7 +875,7 @@ h1 em {
   align-items: center;
   gap: 8px;
   padding: 25px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   color: #657083;
 }
 .record-fab {
@@ -904,7 +904,7 @@ h1 em {
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
-  font-size: 13px;
+  font-size: 15px;
   color: #657083;
 }
 .season-progress progress {
@@ -940,7 +940,7 @@ h1 em {
 .chamber-dialog > p {
   color: #657083;
   line-height: 1.5;
-  font-size: 13px;
+  font-size: 15px;
 }
 .entry-player {
   padding: 12px 0;
@@ -974,7 +974,7 @@ h1 em {
   align-items: center;
   gap: 6px;
   padding: 9px 14px;
-  font-size: 12px;
+  font-size: 14px;
   min-height: 38px;
 }
 .entry-achievements .selected {
@@ -1013,7 +1013,7 @@ h1 em {
   padding: 12px 14px;
   margin: 15px 0;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 15px;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -1087,7 +1087,7 @@ h1 em {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
 }
 .login-orbit {
@@ -1126,7 +1126,7 @@ h1 em {
     font-size: 28px;
   }
   .recap-link small {
-    font-size: 12px;
+    font-size: 14px;
   }
   .form-row > div > span {
     width: 22px;
@@ -1218,7 +1218,7 @@ h1 em {
   align-items: center;
   gap: 8px;
   margin: 18px 0 28px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1px;
 }
@@ -1237,7 +1237,7 @@ h1 em {
 }
 .story-body .eyebrow {
   color: var(--story-muted);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2px;
 }
 .story-body h1 {
@@ -1278,7 +1278,7 @@ h1 em {
 }
 .story-hero-number > span {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 3px;
   font-weight: 400;
   margin-top: 10px;
@@ -1302,7 +1302,7 @@ h1 em {
   letter-spacing: -1px;
 }
 .story-metrics span {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--story-muted);
 }
 .story-caption {
@@ -1313,14 +1313,6 @@ h1 em {
 }
 .story-footer {
   margin-top: 30px;
-}
-.story-footer > div:first-child {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  opacity: 0.65;
-  gap: 12px;
 }
 .story-controls {
   display: flex;
@@ -1372,7 +1364,7 @@ h1 em {
   margin-top: 4px;
 }
 .story-highlights small {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: #80551c;
 }
@@ -1394,7 +1386,7 @@ h1 em {
   border-bottom: 1px solid var(--story-line);
 }
 .story-standings > div > span:first-child {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--story-muted);
 }
 .story-standings > div > strong {
@@ -1408,7 +1400,7 @@ h1 em {
 }
 .story-standings small {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0;
   color: var(--story-muted);
   font-weight: 400;
@@ -1438,7 +1430,7 @@ h1 em {
   margin-top: 25px;
 }
 .story-prize span {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.2px;
   color: var(--story-muted);
 }
@@ -1488,13 +1480,13 @@ h1 em {
 }
 .export-row small {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   margin-top: 7px;
   color: #657083;
 }
 .scorecard-export footer {
-  font-size: 12px;
+  font-size: 14px;
   color: #657083;
   letter-spacing: 2px;
   margin-top: 30px;
@@ -1737,7 +1729,7 @@ h1 em {
 }
 .status-pill {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 .filter-chips,
 .chart-legend {
@@ -1844,11 +1836,8 @@ h1 em {
   min-height: 46px;
   padding-inline: 16px;
 }
-.story-footer > div:first-child {
-  flex-wrap: wrap;
-}
 .story-share-note {
-  font-size: 12px;
+  font-size: 14px;
   text-align: center;
   line-height: 1.6;
   margin-top: 15px;
@@ -1861,7 +1850,7 @@ h1 em {
   min-height: 44px;
   text-decoration: underline;
   text-underline-offset: 4px;
-  font-size: 13px;
+  font-size: 15px;
 }
 .login-content h1 {
   letter-spacing: -2.8px;
@@ -1915,4 +1904,113 @@ h1 em {
   .chamber-app {
     --page-gutter: 16px;
   }
+}
+
+/* Original Catan lettering and illustrated game pieces. */
+h1,
+h2,
+h3,
+.wordmark,
+.standing-score > strong,
+.story-hero-number > span:first-child,
+.story-metrics strong,
+.award-card > strong,
+.career-card strong,
+.story-prize strong {
+  font-family: var(--font-macondo), cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.wordmark {
+  font-size: 24px;
+  gap: 10px;
+}
+.login-content h1 {
+  font-family: var(--font-macondo), cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+  margin: 18px 0 0;
+}
+.login-content h1 em {
+  font-style: normal;
+}
+.login-content form {
+  margin-top: 34px;
+}
+.login-artwork {
+  display: block;
+}
+.game-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+.bottom-nav .game-icon {
+  position: relative;
+  z-index: 1;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.bottom-nav button.active .game-icon {
+  transform: translateY(-2px);
+}
+.eyebrow,
+.story-header,
+.story-hero-number > span:last-child,
+.story-metrics span,
+.story-highlights small,
+.story-prize > span {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 16px;
+}
+.story-body h1 {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.story-hero-number {
+  font-family: var(--font-macondo), cursive;
+  font-weight: 400;
+  letter-spacing: -2px;
+}
+.story-hero-number > span:last-child {
+  font-family: var(--font-crimson), Georgia, serif;
+}
+.story-footer {
+  margin-top: 16px;
+}
+.story-controls {
+  margin-top: 0;
+}
+.story-crown > .game-icon {
+  margin-bottom: 4px;
+}
+@media (max-width: 360px) {
+  .wordmark {
+    font-size: 22px;
+    gap: 8px;
+  }
+}
+
+.chamber-app h1,
+.chamber-app h2,
+.chamber-app h3 {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.point-total strong,
+.story-standings b {
+  font-family: var(--font-macondo), cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.point-total small,
+.latest-match small {
+  letter-spacing: 0;
+}
+.login-content label,
+.login-content button {
+  font-size: 17px;
+}
+.story-body .eyebrow {
+  font-size: 16px;
+  letter-spacing: 0;
 }

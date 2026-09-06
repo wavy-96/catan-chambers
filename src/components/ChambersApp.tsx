@@ -1,4 +1,5 @@
 "use client";
+import { GameIcon } from "./GameIcon";
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
@@ -22,21 +23,12 @@ import {
   ArrowUpRight,
   Check,
   ChevronDown,
-  Crown,
   Flag,
-  Flame,
   Hexagon,
   History,
-  LayoutDashboard,
   LogOut,
   Plus,
   RefreshCw,
-  Route,
-  Shield,
-  Sparkles,
-  Swords,
-  Trophy,
-  Users,
   X,
 } from "lucide-react";
 import {
@@ -174,11 +166,8 @@ export default function ChambersApp() {
     <main className="chamber-app">
       <header className="app-header">
         <Link href="/" className="wordmark">
-          <span className="brand-mark">
-            <Hexagon size={23} />
-            <span>c</span>
-          </span>
-          catan<span className="wordmark-light">chambers</span>
+          <GameIcon name="colonist" size={38} />
+          Catan Chambers
         </Link>
         <button
           aria-label="Refresh standings"
@@ -235,7 +224,6 @@ export default function ChambersApp() {
           {view === "season" && (
             <>
               <section className="season-heading">
-                <p className="eyebrow">CATAN CHAMBERS</p>
                 <h1>
                   {season.name.replace("Catan ", "Season ").replace(".0", "")}
                 </h1>
@@ -256,11 +244,10 @@ export default function ChambersApp() {
                   href={`/recap?season=${season.id}`}
                 >
                   <span className="recap-icon">
-                    <Sparkles size={19} />
+                    <GameIcon name="leaderboard" size={32} />
                   </span>
                   <span>
                     <strong>Season recap</strong>
-                    <small>Highlights and images to share</small>
                   </span>
                   <ArrowUpRight size={22} />
                 </Link>
@@ -310,7 +297,7 @@ export default function ChambersApp() {
                         <strong>
                           {p.name}
                           {p.rank === 1 && games.length > 0 && (
-                            <Crown size={15} />
+                            <GameIcon name="crown" size={24} />
                           )}
                         </strong>
                         <span>
@@ -323,16 +310,16 @@ export default function ChambersApp() {
                         <strong>
                           <AnimatedNumber value={p.total} />
                         </strong>
-                        <small>PTS</small>
+                        <small>points</small>
                       </div>
                     </div>
                     <div className="standing-detail">
                       <span>
-                        <Route size={14} />
+                        <GameIcon name="road" size={24} />
                         {p.roads} roads
                       </span>
                       <span>
-                        <Shield size={14} />
+                        <GameIcon name="army" size={24} />
                         {p.armies} armies
                       </span>
                       <span className={p.bonus ? "bonus-label" : "gap-label"}>
@@ -361,7 +348,6 @@ export default function ChambersApp() {
               <section className="chart-panel">
                 <div className="section-title">
                   <div>
-                    <p className="eyebrow">PROGRESS</p>
                     <h2>Points over time</h2>
                   </div>
                   <span>Base points</span>
@@ -390,7 +376,7 @@ export default function ChambersApp() {
                     <History size={19} />
                   </span>
                   <span>
-                    <small>LATEST GAME</small>
+                    <small>Latest game</small>
                     <strong>
                       {
                         data.players.find((p) => p.id === latest.winner_id)
@@ -414,7 +400,6 @@ export default function ChambersApp() {
           {view === "history" && (
             <>
               <section className="view-heading">
-                <p className="eyebrow">MATCHES</p>
                 <h1>Game history</h1>
                 <p>
                   {games.length} matches in {season.name}
@@ -473,7 +458,6 @@ export default function ChambersApp() {
           {view === "club" && (
             <>
               <section className="view-heading">
-                <p className="eyebrow">ALL SEASONS</p>
                 <h1>Players</h1>
                 <p>
                   {data.games.filter((g) => !g.voided_at).length} games across{" "}
@@ -520,7 +504,7 @@ export default function ChambersApp() {
                     setView("season");
                   }}
                 >
-                  <Trophy size={20} />
+                  <GameIcon name="chalice" size={24} />
                   <span>
                     <strong>{s.name}</strong>
                     <small>
@@ -569,10 +553,10 @@ export default function ChambersApp() {
       <nav className="bottom-nav" aria-label="Main navigation">
         {(
           [
-            { id: "season", label: "Season", icon: LayoutDashboard },
-            { id: "rivalries", label: "Rivalries", icon: Swords },
-            { id: "history", label: "Games", icon: History },
-            { id: "club", label: "Players", icon: Users },
+            { id: "season", label: "Season", icon: "leaderboard" },
+            { id: "rivalries", label: "Rivalries", icon: "balance" },
+            { id: "history", label: "Games", icon: "history" },
+            { id: "club", label: "Players", icon: "colonist" },
           ] as const
         ).map((item) => (
           <button
@@ -588,7 +572,7 @@ export default function ChambersApp() {
             }}
           >
             {view === item.id && <TabIndicator />}
-            <item.icon size={21} />
+            <GameIcon name={item.icon} size={30} />
             <span>{item.label}</span>
           </button>
         ))}
@@ -707,15 +691,14 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
         .slice(0, games.length)
     : [];
   const awards = [
-    { title: "Most wins", field: "wins", icon: Trophy },
-    { title: "Longest win streak", field: "bestStreak", icon: Flame },
-    { title: "Most Roads", field: "roads", icon: Route },
-    { title: "Most Armies", field: "armies", icon: Shield },
+    { title: "Most wins", field: "wins", icon: "chalice" },
+    { title: "Longest win streak", field: "bestStreak", icon: "trend" },
+    { title: "Most Roads", field: "roads", icon: "road" },
+    { title: "Most Armies", field: "armies", icon: "army" },
   ] as const;
   return (
     <>
       <section className="view-heading">
-        <p className="eyebrow">SEASON STATS</p>
         <h1>Rivalries</h1>
       </section>
       <div className="awards-grid">
@@ -723,7 +706,7 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
           const max = Math.max(0, ...rows.map((p) => p[award.field]));
           return (
             <Reveal className="award-card" key={award.title}>
-              <award.icon size={21} />
+              <GameIcon name={award.icon} size={36} />
               <span>{award.title}</span>
               <strong>
                 <AnimatedNumber value={max} />
@@ -743,7 +726,7 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
       <section className="head-to-head">
         <div className="section-title">
           <h2>Head to head</h2>
-          <Swords size={18} />
+          <GameIcon name="balance" size={28} />
         </div>
         <div className="versus-pickers">
           <select
@@ -832,7 +815,6 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
         <section className="chart-panel">
           <div className="section-title">
             <div>
-              <p className="eyebrow">THEN VS NOW</p>
               <h2>Same stage, last season</h2>
             </div>
           </div>
@@ -937,7 +919,7 @@ function GameCard({
         {game.voided_at
           ? "Nullified"
           : `${players.find((p) => p.id === game.winner_id)?.name} won`}
-        {!game.voided_at && <Trophy size={19} />}
+        {!game.voided_at && <GameIcon name="chalice" size={24} />}
       </h2>
       <div className="game-score-grid">
         {players.map((p) => {
@@ -947,8 +929,8 @@ function GameCard({
               <span style={{ color: COLORS[p.name] }}>{p.name}</span>
               <strong>{s?.points ?? "—"}</strong>
               <small>
-                {s?.longest_road && <Route size={13} />}
-                {s?.largest_army && <Shield size={13} />}
+                {s?.longest_road && <GameIcon name="road" size={24} />}
+                {s?.largest_army && <GameIcon name="army" size={24} />}
               </small>
             </div>
           );
@@ -1098,9 +1080,9 @@ function RecordDialog({
                     }
                   >
                     {field === "longest_road" ? (
-                      <Route size={14} />
+                      <GameIcon name="road" size={24} />
                     ) : (
-                      <Shield size={14} />
+                      <GameIcon name="army" size={24} />
                     )}
                     {field === "longest_road" ? "Road" : "Army"}
                     {s[field] && <Check size={13} />}
