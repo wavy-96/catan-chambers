@@ -1,124 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string
-const adminPassword = process.env.ADMIN_PASSWORD as string
-
-// GET: List all tournaments
+import { NextRequest, NextResponse } from "next/server";
+import { currentRole, database } from "@/lib/server";
 export async function GET() {
-  try {
-    const supabase = createClient(supabaseUrl, serviceKey)
-
-    const { data, error } = await supabase
-      .from('tournaments')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ tournaments: data })
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Unknown error' },
-      { status: 500 }
-    )
-  }
+  if (!(await currentRole()))
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  const { data, error } = await database()
+    .from("tournaments")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return error
+    ? NextResponse.json({ error: "Could not load seasons." }, { status: 503 })
+    : NextResponse.json({ tournaments: data });
 }
-
-// POST: Create a new tournament
 export async function POST(req: NextRequest) {
-  try {
-    const { name, totalGames, prizePool, password } = await req.json()
-
-    // Validate inputs
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json({ error: 'Tournament name is required' }, { status: 400 })
-    }
-
-    if (!password) {
-      return NextResponse.json({ error: 'Admin password is required' }, { status: 400 })
-    }
-
-    if (!adminPassword) {
-      return NextResponse.json({ error: 'Server missing ADMIN_PASSWORD' }, { status: 500 })
-    }
-
-    if (password !== adminPassword) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
-
-    // Check if a tournament with this name already exists
-    const { data: existing } = await supabase
-      .from('tournaments')
-      .select('id')
-      .eq('name', name.trim())
-      .single()
-
-    if (existing) {
-      return NextResponse.json({ error: 'A tournament with this name already exists' }, { status: 400 })
-    }
-
-    // Mark any currently active tournament as completed
-    await supabase
-      .from('tournaments')
-      .update({ status: 'completed' })
-      .eq('status', 'active')
-
-    // Create the new tournament
-    const { data: tournament, error: createError } = await supabase
-      .from('tournaments')
-      .insert({
-        name: name.trim(),
-        total_games: totalGames || 20,
-        prize_pool: prizePool || 10000,
-        status: 'active'
-      })
-      .select()
-      .single()
-
-    if (createError) {
-      return NextResponse.json({ error: createError.message }, { status: 500 })
-    }
-
-    // Initialize tournament_player_stats for all players
-    const { data: players } = await supabase
-      .from('players')
-      .select('id')
-
-    if (players && players.length > 0) {
-      const statsToInsert = players.map(player => ({
-        tournament_id: tournament.id,
-        player_id: player.id,
-        total_games: 0,
-        wins: 0,
-        total_points: 0,
-        longest_road_count: 0,
-        largest_army_count: 0,
-        win_streak: 0,
-        best_win_streak: 0
-      }))
-
-      const { error: statsError } = await supabase
-        .from('tournament_player_stats')
-        .insert(statsToInsert)
-
-      if (statsError) {
-        console.error('Error initializing player stats:', statsError)
-        // Don't fail the request, just log the error
-      }
-    }
-
-    return NextResponse.json({ tournament })
-  } catch (e) {
-    console.error('Error creating tournament:', e)
+  if ((await currentRole()) !== "admin")
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Unknown error' },
-      { status: 500 }
+      { error: "Only Tamim can create seasons." },
+      { status: 403 },
+    );
+  if (req.headers.get("origin") !== req.nextUrl.origin)
+    return NextResponse.json(
+      { error: "Invalid request origin." },
+      { status: 403 },
+    );
+  try {
+    const { name, totalGames, prizePool, bonusTieRule, roadBonus, armyBonus } =
+      await req.json();
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      name.length > 60 ||
+      !Number.isInteger(totalGames) ||
+      totalGames < 1 ||
+      totalGames > 100 ||
+      !Number.isInteger(prizePool) ||
+      prizePool < 0 ||
+      prizePool > 1000000 ||
+      !["each", "split", "none"].includes(bonusTieRule) ||
+      ![0, 10].includes(roadBonus) ||
+      ![0, 10].includes(armyBonus)
     )
+      throw new Error("Check the season name, rules, prize, and game count.");
+    const { data, error } = await database().rpc("create_chambers_season", {
+      p_name: name.trim(),
+      p_total_games: totalGames,
+      p_prize_pool: prizePool,
+      p_tie: bonusTieRule,
+      p_road: roadBonus,
+      p_army: armyBonus,
+    });
+    if (error)
+      throw new Error(
+        error.code === "PGRST202"
+          ? "Season creation is awaiting the database upgrade."
+          : error.message,
+      );
+    return NextResponse.json({ seasonId: data });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Could not create season." },
+      { status: 400 },
+    );
   }
 }
