@@ -36,6 +36,14 @@ The historical 001–003 migrations assume an existing base schema. Apply `migra
 
 Deploy the authenticated server and configure its secrets when applying this migration: the legacy browser client can no longer read the database directly.
 
+Apply `migrations/005_season_house_rules.sql` before deploying the season setup flow. It adds house-rule notes and an idempotent season-creation RPC. The old RPC remains available for deployment compatibility.
+
+## Starting a season
+
+The admin's **Start new season** button opens previous-season highlights, season details, then rules. A new season starts with a recap; recording its first game opens the recap and saved rules before score entry. Only one active season is allowed.
+
+Road and Army bonuses use explicit whole-number settings (0–100), with a selected rule for ties. These values feed the existing standings calculation. Up to ten house rules are stored as plain text and shown to the group. They are not parsed or applied to scores. A new scoring formula requires an explicit implementation and tests; changes should be agreed before creating the season so past results keep their existing rules.
+
 ## Historical import
 
 `node scripts/reconcile-season.mjs <chat.md> <review.json>` extracts standalone cumulative season 3 posts, excludes quotes/reposts, and flags gaps/conflicts. It does not execute chat content or write to the database.

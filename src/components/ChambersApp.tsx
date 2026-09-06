@@ -1,4 +1,10 @@
 "use client";
+import {
+  NewSeasonDialog,
+  PreviousSeasons,
+  SeasonOpeningDialog,
+  SeasonRuleList,
+} from "./SeasonSetup";
 import { GameIcon } from "./GameIcon";
 
 import { useCallback, useEffect, useState } from "react";
@@ -93,6 +99,7 @@ export default function ChambersApp() {
     [view, setView] = useState<View>("season");
   const [recording, setRecording] = useState(false),
     [creating, setCreating] = useState(false),
+    [opening, setOpening] = useState(false),
     [filter, setFilter] = useState("all"),
     [notice, setNotice] = useState("");
   const load = useCallback(async () => {
@@ -238,6 +245,26 @@ export default function ChambersApp() {
                   </span>
                 </div>
               </section>
+              {isAdmin &&
+                done &&
+                !data.seasons.some((s) => s.status === "active") && (
+                  <button
+                    className="secondary-button full-width new-season-button"
+                    onClick={() => setCreating(true)}
+                  >
+                    <Plus size={18} /> Start new season
+                  </button>
+                )}
+              {season.status === "active" && nextNumber === 1 && (
+                <section className="season-opening">
+                  <h2>Before game 1</h2>
+                  <PreviousSeasons data={data} />
+                </section>
+              )}
+              <details className="season-rules">
+                <summary>Season rules</summary>
+                <SeasonRuleList season={season} />
+              </details>
               {done ? (
                 <Link
                   className="recap-link"
@@ -521,13 +548,13 @@ export default function ChambersApp() {
                 </button>
               ))}
 
-              {isAdmin && (
+              {isAdmin && !data.seasons.some((s) => s.status === "active") && (
                 <button
                   className="secondary-button full-width"
                   onClick={() => setCreating(true)}
                 >
                   <Plus size={17} />
-                  Create next season
+                  Start new season
                 </button>
               )}
               <button
@@ -545,7 +572,12 @@ export default function ChambersApp() {
         </MotionPage>
       </AnimatePresence>
       {isAdmin && season.status === "active" && (
-        <button className="record-fab" onClick={() => setRecording(true)}>
+        <button
+          className="record-fab"
+          onClick={() =>
+            nextNumber === 1 ? setOpening(true) : setRecording(true)
+          }
+        >
           <Plus size={19} />
           Record game
         </button>
@@ -589,16 +621,30 @@ export default function ChambersApp() {
           setNotice("Game recorded. Standings are up to date.");
         }}
       />
-      <CreateDialog
-        open={creating}
-        close={() => setCreating(false)}
-        saved={async (id) => {
-          setCreating(false);
-          setSeasonId(id);
-          await load();
-          setView("season");
-        }}
-      />
+      {opening && (
+        <SeasonOpeningDialog
+          data={data}
+          season={season}
+          close={() => setOpening(false)}
+          record={() => {
+            setOpening(false);
+            setRecording(true);
+          }}
+        />
+      )}
+      {creating && (
+        <NewSeasonDialog
+          data={data}
+          close={() => setCreating(false)}
+          saved={async (id) => {
+            setCreating(false);
+            setSeasonId(id);
+            await load();
+            setView("season");
+            window.scrollTo({ top: 0, behavior: "instant" });
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -1122,121 +1168,6 @@ function RecordDialog({
         >
           {busy ? "Recording…" : "Record result"}
           <ArrowUpRight size={17} />
-        </button>
-        {error && (
-          <p role="alert" className="error-text">
-            {error}
-          </p>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-function CreateDialog({
-  open,
-  close,
-  saved,
-}: {
-  open: boolean;
-  close: () => void;
-  saved: (seasonId: string) => Promise<void>;
-}) {
-  const [name, setName] = useState(""),
-    [count, setCount] = useState(20),
-    [prize, setPrize] = useState(10000),
-    [tie, setTie] = useState(""),
-    [bonuses, setBonuses] = useState(true),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  return (
-    <Dialog open={open} onOpenChange={close}>
-      <DialogContent className="chamber-dialog">
-        <DialogTitle>Create season</DialogTitle>
-        <DialogDescription>
-          Set the rules before the first game.
-        </DialogDescription>
-        <label htmlFor="season-name">Season name</label>
-        <input
-          id="season-name"
-          placeholder="Catan 4.0"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <div className="two-fields">
-          <label>
-            Games
-            <input
-              type="number"
-              min={1}
-              max={100}
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Prize · INR
-            <input
-              type="number"
-              min={0}
-              value={prize}
-              onChange={(e) => setPrize(Number(e.target.value))}
-            />
-          </label>
-        </div>
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={bonuses}
-            onChange={(e) => setBonuses(e.target.checked)}
-          />
-          +10 most Roads / +10 most Armies
-        </label>
-        <label htmlFor="tie-rule">If achievement leaders tie</label>
-        <select
-          id="tie-rule"
-          value={tie}
-          onChange={(e) => setTie(e.target.value)}
-        >
-          <option value="" disabled>
-            Choose the rule
-          </option>
-          <option value="each">Each tied player gets +10</option>
-          <option value="split">Split the +10 equally</option>
-          <option value="none">No bonus on a tie</option>
-        </select>
-        <button
-          className="primary-button"
-          disabled={busy || !name.trim() || !tie}
-          onClick={async () => {
-            setBusy(true);
-            setError("");
-            try {
-              const r = await fetch("/api/tournaments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  name,
-                  totalGames: count,
-                  prizePool: prize,
-                  bonusTieRule: tie,
-                  roadBonus: bonuses ? 10 : 0,
-                  armyBonus: bonuses ? 10 : 0,
-                }),
-              });
-              const d = await r.json();
-              if (!r.ok) throw new Error(d.error);
-              await saved(d.seasonId);
-            } catch (e) {
-              setError(
-                e instanceof Error ? e.message : "Could not create season.",
-              );
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          Create season
-          <Plus size={17} />
         </button>
         {error && (
           <p role="alert" className="error-text">

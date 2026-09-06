@@ -10,6 +10,7 @@ export type Season = {
   army_bonus?: number;
   bonus_tie_rule?: string;
   completion_note?: string | null;
+  house_rules?: string[];
 };
 export type Score = {
   player_id: string;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { validateSeasonSetup } from "@/lib/season-setup";
 import { currentRole, database } from "@/lib/server";
 export async function GET() {
   if (!(await currentRole()))
@@ -23,30 +24,16 @@ export async function POST(req: NextRequest) {
       { status: 403 },
     );
   try {
-    const { name, totalGames, prizePool, bonusTieRule, roadBonus, armyBonus } =
-      await req.json();
-    if (
-      typeof name !== "string" ||
-      !name.trim() ||
-      name.length > 60 ||
-      !Number.isInteger(totalGames) ||
-      totalGames < 1 ||
-      totalGames > 100 ||
-      !Number.isInteger(prizePool) ||
-      prizePool < 0 ||
-      prizePool > 1000000 ||
-      !["each", "split", "none"].includes(bonusTieRule) ||
-      ![0, 10].includes(roadBonus) ||
-      ![0, 10].includes(armyBonus)
-    )
-      throw new Error("Check the season name, rules, prize, and game count.");
-    const { data, error } = await database().rpc("create_chambers_season", {
-      p_name: name.trim(),
-      p_total_games: totalGames,
-      p_prize_pool: prizePool,
-      p_tie: bonusTieRule,
-      p_road: roadBonus,
-      p_army: armyBonus,
+    const setup = validateSeasonSetup(await req.json());
+    const { data, error } = await database().rpc("create_chambers_season_v2", {
+      p_request_id: setup.requestId,
+      p_name: setup.name,
+      p_total_games: setup.totalGames,
+      p_prize_pool: setup.prizePool,
+      p_tie: setup.bonusTieRule,
+      p_road: setup.roadBonus,
+      p_army: setup.armyBonus,
+      p_house_rules: setup.houseRules,
     });
     if (error)
       throw new Error(
