@@ -1,6 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  MotionPage,
+  Reveal,
+  AnimatedNumber,
+  TabIndicator,
+} from "./LeagueMotion";
 import Link from "next/link";
 import {
   AreaChart,
@@ -86,6 +93,8 @@ const dateLabel = (date: string) =>
 const pointsLabel = (n: number) => (Number.isInteger(n) ? n : n.toFixed(1));
 
 export default function ChambersApp() {
+  const reducedMotion = useReducedMotion();
+  const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<League | null>(null),
     [error, setError] = useState(""),
     [seasonId, setSeasonId] = useState(""),
@@ -133,8 +142,8 @@ export default function ChambersApp() {
     return (
       <main className="chamber-app loading-view">
         <Hexagon size={38} />
-        <h1>{error ? "The chamber is offline." : "Opening the chamber…"}</h1>
-        <p>{error || "Getting the latest standings."}</p>
+        <h1>{error ? "Unable to load results" : "Loading results…"}</h1>
+        <p>{error || "This should take a moment."}</p>
         <button className="secondary-button" onClick={load}>
           <RefreshCw size={16} />
           Try again
@@ -173,8 +182,14 @@ export default function ChambersApp() {
         </Link>
         <button
           aria-label="Refresh standings"
-          className="icon-button"
-          onClick={load}
+          className={`icon-button ${refreshing ? "is-refreshing" : ""}`}
+          disabled={refreshing}
+          aria-busy={refreshing}
+          onClick={async () => {
+            setRefreshing(true);
+            await load();
+            setRefreshing(false);
+          }}
         >
           <RefreshCw size={17} />
         </button>
@@ -215,319 +230,336 @@ export default function ChambersApp() {
           </button>
         </div>
       )}
-      {view === "season" && (
-        <>
-          <section className="season-heading">
-            <p className="eyebrow">THE CHAMBER LEAGUE</p>
-            <h1>
+      <AnimatePresence mode="wait" initial={false}>
+        <MotionPage key={`${view}-${season.id}`} className="view-content">
+          {view === "season" && (
+            <>
+              <section className="season-heading">
+                <p className="eyebrow">CATAN CHAMBERS</p>
+                <h1>
+                  {season.name.replace("Catan ", "Season ").replace(".0", "")}
+                </h1>
+                <div className="season-meta">
+                  <span>
+                    {games.length} {games.length === 1 ? "game" : "games"}{" "}
+                    played
+                  </span>
+                  <i />
+                  <span>
+                    ₹{season.prize_pool.toLocaleString("en-IN")} prize pool
+                  </span>
+                </div>
+              </section>
               {done ? (
-                <>
-                  Settled on
-                  <br />
-                  <em>the board.</em>
-                </>
+                <Link
+                  className="recap-link"
+                  href={`/recap?season=${season.id}`}
+                >
+                  <span className="recap-icon">
+                    <Sparkles size={19} />
+                  </span>
+                  <span>
+                    <strong>Season recap</strong>
+                    <small>Highlights and images to share</small>
+                  </span>
+                  <ArrowUpRight size={22} />
+                </Link>
               ) : (
-                <>
-                  The race
-                  <br />
-                  <em>is on.</em>
-                </>
-              )}
-            </h1>
-            <div className="season-meta">
-              <span>
-                {games.length} {games.length === 1 ? "game" : "games"} played
-              </span>
-              <i />
-              <span>
-                ₹{season.prize_pool.toLocaleString("en-IN")} on the line
-              </span>
-            </div>
-          </section>
-          {done ? (
-            <Link className="recap-link" href={`/recap?season=${season.id}`}>
-              <span className="recap-icon">
-                <Sparkles size={19} />
-              </span>
-              <span>
-                <strong>Your season, wrapped.</strong>
-                <small>Relive the wins. Remember the chaos.</small>
-              </span>
-              <ArrowUpRight size={22} />
-            </Link>
-          ) : (
-            <div className="season-progress">
-              <div>
-                <span>Season progress</span>
-                <strong>
-                  {games.length} / {season.total_games}
-                </strong>
-              </div>
-              <progress max={season.total_games} value={games.length} />
-            </div>
-          )}
-          {rules.note && (
-            <div className="forfeit-note">
-              <Flag size={17} />
-              <span>{rules.note}</span>
-            </div>
-          )}
-          <div className="section-title">
-            <h2>The standings</h2>
-            <span>
-              {rules.road || rules.army
-                ? done
-                  ? "Including bonuses"
-                  : "Provisional bonuses"
-                : "Total points"}
-            </span>
-          </div>
-          <section className="standings-list" aria-label="Season standings">
-            {rows.map((p) => (
-              <div
-                key={p.id}
-                className={`standing-card ${p.rank === 1 && games.length ? "standing-first" : ""}`}
-                style={{ "--player": COLORS[p.name] } as React.CSSProperties}
-              >
-                <div className="standing-main">
-                  <span className="rank">
-                    {String(p.rank).padStart(2, "0")}
-                  </span>
-                  <Avatar player={p} />
-                  <div className="player-name">
+                <div className="season-progress">
+                  <div>
+                    <span>Season progress</span>
                     <strong>
-                      {p.name}
-                      {p.rank === 1 && games.length > 0 && <Crown size={15} />}
+                      {games.length} / {season.total_games}
                     </strong>
-                    <span>
-                      {p.wins} wins <i>·</i>{" "}
-                      {p.played ? Math.round((p.wins / p.played) * 100) : 0}%
-                      win rate
+                  </div>
+                  <progress max={season.total_games} value={games.length} />
+                </div>
+              )}
+              {rules.note && (
+                <div className="forfeit-note">
+                  <Flag size={17} />
+                  <span>{rules.note}</span>
+                </div>
+              )}
+              <div className="section-title">
+                <h2>Standings</h2>
+                <span>
+                  {rules.road || rules.army
+                    ? done
+                      ? "Including bonuses"
+                      : "Provisional bonuses"
+                    : "Total points"}
+                </span>
+              </div>
+              <section className="standings-list" aria-label="Season standings">
+                {rows.map((p, index) => (
+                  <Reveal
+                    index={index}
+                    key={p.id}
+                    className={`standing-card ${p.rank === 1 && games.length ? "standing-first" : ""}`}
+                    style={
+                      { "--player": COLORS[p.name] } as React.CSSProperties
+                    }
+                  >
+                    <div className="standing-main">
+                      <span className="rank">
+                        {String(p.rank).padStart(2, "0")}
+                      </span>
+                      <Avatar player={p} />
+                      <div className="player-name">
+                        <strong>
+                          {p.name}
+                          {p.rank === 1 && games.length > 0 && (
+                            <Crown size={15} />
+                          )}
+                        </strong>
+                        <span>
+                          {p.wins} wins <i>·</i>{" "}
+                          {p.played ? Math.round((p.wins / p.played) * 100) : 0}
+                          % win rate
+                        </span>
+                      </div>
+                      <div className="point-total">
+                        <strong>
+                          <AnimatedNumber value={p.total} />
+                        </strong>
+                        <small>PTS</small>
+                      </div>
+                    </div>
+                    <div className="standing-detail">
+                      <span>
+                        <Route size={14} />
+                        {p.roads} roads
+                      </span>
+                      <span>
+                        <Shield size={14} />
+                        {p.armies} armies
+                      </span>
+                      <span className={p.bonus ? "bonus-label" : "gap-label"}>
+                        {p.bonus
+                          ? `+${pointsLabel(p.bonus)} bonus`
+                          : p.rank === 1
+                            ? "Leader"
+                            : `${pointsLabel(leader.total - p.total)} behind`}
+                      </span>
+                    </div>
+                    {p.unresolvedBonus && (
+                      <p className="unresolved">
+                        Bonus tied — tiebreak rule pending
+                      </p>
+                    )}
+                  </Reveal>
+                ))}
+              </section>
+              {(rules.road > 0 || rules.army > 0) && (
+                <p className="scoring-note">
+                  Base points + {rules.road} for most Roads + {rules.army} for
+                  most Armies.
+                  {!done && " Bonuses settle at the end of the season."}
+                </p>
+              )}
+              <section className="chart-panel">
+                <div className="section-title">
+                  <div>
+                    <p className="eyebrow">PROGRESS</p>
+                    <h2>Points over time</h2>
+                  </div>
+                  <span>Base points</span>
+                </div>
+                <RaceChart data={data} season={season} />
+                <div
+                  className="chart-legend"
+                  role="group"
+                  aria-label="Chart players"
+                  tabIndex={0}
+                >
+                  {data.players.map((p) => (
+                    <span key={p.id}>
+                      <i style={{ background: COLORS[p.name] }} />
+                      {p.name}
                     </span>
-                  </div>
-                  <div className="point-total">
-                    <strong>{pointsLabel(p.total)}</strong>
-                    <small>PTS</small>
-                  </div>
+                  ))}
                 </div>
-                <div className="standing-detail">
-                  <span>
-                    <Route size={14} />
-                    {p.roads} roads
+              </section>
+              {latest && (
+                <button
+                  className="last-game"
+                  onClick={() => setView("history")}
+                >
+                  <span className="small-icon">
+                    <History size={19} />
                   </span>
                   <span>
-                    <Shield size={14} />
-                    {p.armies} armies
+                    <small>LATEST GAME</small>
+                    <strong>
+                      {
+                        data.players.find((p) => p.id === latest.winner_id)
+                          ?.name
+                      }{" "}
+                      won game {latest.game_number}
+                    </strong>
                   </span>
-                  <span className={p.bonus ? "bonus-label" : "gap-label"}>
-                    {p.bonus
-                      ? `+${pointsLabel(p.bonus)} bonus`
-                      : p.rank === 1
-                        ? "Setting the pace"
-                        : `${pointsLabel(leader.total - p.total)} behind`}
-                  </span>
-                </div>
-                {p.unresolvedBonus && (
-                  <p className="unresolved">
-                    Bonus tied — tiebreak rule pending
-                  </p>
+                  <ArrowUpRight size={19} />
+                </button>
+              )}
+              <button
+                className="text-button"
+                onClick={() => setView("rivalries")}
+              >
+                View player comparisons <ArrowUpRight size={16} />
+              </button>
+            </>
+          )}
+          {view === "rivalries" && <Rivalries data={data} season={season} />}
+          {view === "history" && (
+            <>
+              <section className="view-heading">
+                <p className="eyebrow">MATCHES</p>
+                <h1>Game history</h1>
+                <p>
+                  {games.length} matches in {season.name}
+                </p>
+              </section>
+              <div
+                className="filter-chips"
+                role="group"
+                aria-label="Filter games by winner"
+                tabIndex={0}
+              >
+                <button
+                  className={filter === "all" ? "active" : ""}
+                  onClick={() => setFilter("all")}
+                >
+                  Everyone
+                </button>
+                {data.players.map((p) => (
+                  <button
+                    className={filter === p.id ? "active" : ""}
+                    key={p.id}
+                    onClick={() => setFilter(p.id)}
+                  >
+                    {p.name} wins
+                  </button>
+                ))}
+              </div>
+              <div className="game-list" key={filter}>
+                {[...data.games]
+                  .filter(
+                    (g) =>
+                      g.tournament_id === season.id &&
+                      (filter === "all" || g.winner_id === filter),
+                  )
+                  .sort((a, b) => b.game_number - a.game_number)
+                  .map((g, index) => (
+                    <Reveal key={g.id} index={index}>
+                      <GameCard
+                        key={g.id}
+                        game={g}
+                        players={data.players}
+                        admin={isAdmin}
+                        onChange={async () => {
+                          await load();
+                          setNotice("Game nullified. Standings recalculated.");
+                        }}
+                      />
+                    </Reveal>
+                  ))}
+                {!games.length && (
+                  <p className="empty-state">No games recorded yet.</p>
                 )}
               </div>
-            ))}
-          </section>
-          {(rules.road > 0 || rules.army > 0) && (
-            <p className="scoring-note">
-              Base points + {rules.road} for most Roads + {rules.army} for most
-              Armies.{!done && " Bonuses settle at the end of the season."}
-            </p>
+            </>
           )}
-          <section className="chart-panel">
-            <div className="section-title">
-              <div>
-                <p className="eyebrow">POINT BY POINT</p>
-                <h2>The season race</h2>
+          {view === "club" && (
+            <>
+              <section className="view-heading">
+                <p className="eyebrow">ALL SEASONS</p>
+                <h1>Players</h1>
+                <p>
+                  {data.games.filter((g) => !g.voided_at).length} games across{" "}
+                  {data.seasons.length} seasons.
+                </p>
+              </section>
+              <div className="career-grid">
+                {data.players.map((p) => {
+                  const played = data.games.filter(
+                    (g) =>
+                      !g.voided_at &&
+                      g.game_scores.some((s) => s.player_id === p.id),
+                  );
+                  const wins = played.filter(
+                    (g) => g.winner_id === p.id,
+                  ).length;
+                  return (
+                    <Reveal className="career-card" key={p.id}>
+                      <Avatar player={p} large />
+                      <h2>{p.name}</h2>
+                      <strong>
+                        <AnimatedNumber value={wins} />
+                        <small> career wins</small>
+                      </strong>
+                      <span>
+                        {played.length
+                          ? Math.round((wins / played.length) * 100)
+                          : 0}
+                        % win rate
+                      </span>
+                    </Reveal>
+                  );
+                })}
               </div>
-              <span>Base points</span>
-            </div>
-            <RaceChart data={data} season={season} />
-            <div className="chart-legend">
-              {data.players.map((p) => (
-                <span key={p.id}>
-                  <i style={{ background: COLORS[p.name] }} />
-                  {p.name}
-                </span>
-              ))}
-            </div>
-          </section>
-          {latest && (
-            <button className="last-game" onClick={() => setView("history")}>
-              <span className="small-icon">
-                <History size={19} />
-              </span>
-              <span>
-                <small>LATEST AT THE TABLE</small>
-                <strong>
-                  {data.players.find((p) => p.id === latest.winner_id)?.name}{" "}
-                  took game {latest.game_number}
-                </strong>
-              </span>
-              <ArrowUpRight size={19} />
-            </button>
-          )}
-          <button className="text-button" onClick={() => setView("rivalries")}>
-            Explore the rivalries <ArrowUpRight size={16} />
-          </button>
-        </>
-      )}
-      {view === "rivalries" && <Rivalries data={data} season={season} />}
-      {view === "history" && (
-        <>
-          <section className="view-heading">
-            <p className="eyebrow">THE RECEIPTS</p>
-            <h1>
-              Every game.
-              <br />
-              <em>On record.</em>
-            </h1>
-            <p>
-              {games.length} matches in {season.name}
-            </p>
-          </section>
-          <div className="filter-chips">
-            <button
-              className={filter === "all" ? "active" : ""}
-              onClick={() => setFilter("all")}
-            >
-              Everyone
-            </button>
-            {data.players.map((p) => (
-              <button
-                className={filter === p.id ? "active" : ""}
-                key={p.id}
-                onClick={() => setFilter(p.id)}
-              >
-                {p.name} wins
-              </button>
-            ))}
-          </div>
-          <div className="game-list">
-            {[...data.games]
-              .filter(
-                (g) =>
-                  g.tournament_id === season.id &&
-                  (filter === "all" || g.winner_id === filter),
-              )
-              .sort((a, b) => b.game_number - a.game_number)
-              .map((g) => (
-                <GameCard
-                  key={g.id}
-                  game={g}
-                  players={data.players}
-                  admin={isAdmin}
-                  onChange={async () => {
-                    await load();
-                    setNotice("Game nullified. Standings recalculated.");
+              <div className="section-title">
+                <h2>Season archive</h2>
+              </div>
+              {data.seasons.map((s) => (
+                <button
+                  key={s.id}
+                  className="archive-row"
+                  onClick={() => {
+                    changeSeason(s.id);
+                    setView("season");
                   }}
-                />
-              ))}
-            {!games.length && (
-              <p className="empty-state">
-                The board is waiting for its first game.
-              </p>
-            )}
-          </div>
-        </>
-      )}
-      {view === "club" && (
-        <>
-          <section className="view-heading">
-            <p className="eyebrow">THE INNER CIRCLE</p>
-            <h1>
-              Four friends.
-              <br />
-              <em>Zero mercy.</em>
-            </h1>
-            <p>
-              {data.games.filter((g) => !g.voided_at).length} games across{" "}
-              {data.seasons.length} seasons.
-            </p>
-          </section>
-          <div className="career-grid">
-            {data.players.map((p) => {
-              const played = data.games.filter(
-                (g) =>
-                  !g.voided_at &&
-                  g.game_scores.some((s) => s.player_id === p.id),
-              );
-              const wins = played.filter((g) => g.winner_id === p.id).length;
-              return (
-                <div className="career-card" key={p.id}>
-                  <Avatar player={p} large />
-                  <h2>{p.name}</h2>
-                  <strong>
-                    {wins}
-                    <small> career wins</small>
-                  </strong>
+                >
+                  <Trophy size={20} />
                   <span>
-                    {played.length
-                      ? Math.round((wins / played.length) * 100)
-                      : 0}
-                    % win rate
+                    <strong>{s.name}</strong>
+                    <small>
+                      {s.status === "completed" ? "Completed" : "In play"} ·{" "}
+                      {
+                        data.games.filter(
+                          (g) => g.tournament_id === s.id && !g.voided_at,
+                        ).length
+                      }{" "}
+                      games
+                    </small>
                   </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="section-title">
-            <h2>Season archive</h2>
-          </div>
-          {data.seasons.map((s) => (
-            <button
-              key={s.id}
-              className="archive-row"
-              onClick={() => {
-                changeSeason(s.id);
-                setView("season");
-              }}
-            >
-              <Trophy size={20} />
-              <span>
-                <strong>{s.name}</strong>
-                <small>
-                  {s.status === "completed" ? "Completed" : "In play"} ·{" "}
-                  {
-                    data.games.filter(
-                      (g) => g.tournament_id === s.id && !g.voided_at,
-                    ).length
-                  }{" "}
-                  games
-                </small>
-              </span>
-              <ArrowUpRight size={18} />
-            </button>
-          ))}
+                  <ArrowUpRight size={18} />
+                </button>
+              ))}
 
-          {isAdmin && (
-            <button
-              className="secondary-button full-width"
-              onClick={() => setCreating(true)}
-            >
-              <Plus size={17} />
-              Create next season
-            </button>
+              {isAdmin && (
+                <button
+                  className="secondary-button full-width"
+                  onClick={() => setCreating(true)}
+                >
+                  <Plus size={17} />
+                  Create next season
+                </button>
+              )}
+              <button
+                className="sign-out"
+                onClick={async () => {
+                  await fetch("/api/session", { method: "DELETE" });
+                  location.assign("/login");
+                }}
+              >
+                <LogOut size={16} />
+                Sign out
+              </button>
+            </>
           )}
-          <button
-            className="sign-out"
-            onClick={async () => {
-              await fetch("/api/session", { method: "DELETE" });
-              location.assign("/login");
-            }}
-          >
-            <LogOut size={16} />
-            Leave the chamber
-          </button>
-        </>
-      )}
+        </MotionPage>
+      </AnimatePresence>
       {isAdmin && season.status === "active" && (
         <button className="record-fab" onClick={() => setRecording(true)}>
           <Plus size={19} />
@@ -540,7 +572,7 @@ export default function ChambersApp() {
             { id: "season", label: "Season", icon: LayoutDashboard },
             { id: "rivalries", label: "Rivalries", icon: Swords },
             { id: "history", label: "Games", icon: History },
-            { id: "club", label: "The club", icon: Users },
+            { id: "club", label: "Players", icon: Users },
           ] as const
         ).map((item) => (
           <button
@@ -549,9 +581,13 @@ export default function ChambersApp() {
             className={view === item.id ? "active" : ""}
             onClick={() => {
               setView(item.id);
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              window.scrollTo({
+                top: 0,
+                behavior: reducedMotion ? "instant" : "smooth",
+              });
             }}
           >
+            {view === item.id && <TabIndicator />}
             <item.icon size={21} />
             <span>{item.label}</span>
           </button>
@@ -566,7 +602,7 @@ export default function ChambersApp() {
         saved={async () => {
           setRecording(false);
           await load();
-          setNotice("Game recorded. The standings are up to date.");
+          setNotice("Game recorded. Standings are up to date.");
         }}
       />
       <CreateDialog
@@ -584,9 +620,12 @@ export default function ChambersApp() {
 }
 
 function RaceChart({ data, season }: { data: League; season: Season }) {
+  const reducedMotion = useReducedMotion();
   const chart = progress(data.players, data.games, season);
   if (!chart.length)
-    return <p className="empty-state">Your race starts with game one.</p>;
+    return (
+      <p className="empty-state">The chart appears after the first game.</p>
+    );
   return (
     <div className="race-chart">
       <ResponsiveContainer width="100%" height={220}>
@@ -595,28 +634,28 @@ function RaceChart({ data, season }: { data: League; season: Season }) {
           margin={{ top: 12, right: 8, left: -22, bottom: 0 }}
         >
           <CartesianGrid
-            stroke="#303b34"
+            stroke="#e6ded1"
             vertical={false}
             strokeDasharray="3 6"
           />
           <XAxis
             dataKey="game"
-            stroke="#86968d"
+            stroke="#657083"
             tickLine={false}
             axisLine={false}
             fontSize={12}
             minTickGap={25}
           />
           <YAxis
-            stroke="#86968d"
+            stroke="#657083"
             tickLine={false}
             axisLine={false}
             fontSize={12}
           />
           <Tooltip
             contentStyle={{
-              background: "#202b24",
-              border: "1px solid #4b5a50",
+              background: "#ffffff",
+              border: "1px solid #e6ded1",
               borderRadius: 12,
               fontSize: 14,
             }}
@@ -631,7 +670,9 @@ function RaceChart({ data, season }: { data: League; season: Season }) {
               strokeWidth={2.5}
               fill={COLORS[p.name]}
               fillOpacity={0.035}
-              isAnimationActive={false}
+              isAnimationActive={!reducedMotion}
+              animationDuration={750}
+              animationEasing="ease-out"
             />
           ))}
         </AreaChart>
@@ -668,36 +709,34 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
   const awards = [
     { title: "Most wins", field: "wins", icon: Trophy },
     { title: "Longest win streak", field: "bestStreak", icon: Flame },
-    { title: "Road royalty", field: "roads", icon: Route },
-    { title: "Army command", field: "armies", icon: Shield },
+    { title: "Most Roads", field: "roads", icon: Route },
+    { title: "Most Armies", field: "armies", icon: Shield },
   ] as const;
   return (
     <>
       <section className="view-heading">
-        <p className="eyebrow">FRIENDSHIP, COMPETITIVELY</p>
-        <h1>
-          Let the stats
-          <br />
-          <em>do the talking.</em>
-        </h1>
+        <p className="eyebrow">SEASON STATS</p>
+        <h1>Rivalries</h1>
       </section>
       <div className="awards-grid">
         {awards.map((award) => {
           const max = Math.max(0, ...rows.map((p) => p[award.field]));
           return (
-            <article className="award-card" key={award.title}>
+            <Reveal className="award-card" key={award.title}>
               <award.icon size={21} />
               <span>{award.title}</span>
-              <strong>{max}</strong>
+              <strong>
+                <AnimatedNumber value={max} />
+              </strong>
               <small>
                 {max
                   ? rows
                       .filter((p) => p[award.field] === max)
                       .map((p) => p.name)
                       .join(" & ")
-                  : "Up for grabs"}
+                  : "No results yet"}
               </small>
-            </article>
+            </Reveal>
           );
         })}
       </div>
@@ -835,13 +874,13 @@ function Rivalries({ data, season }: { data: League; season: Season }) {
       )}
       <section className="chart-panel">
         <div className="section-title">
-          <h2>Comeback watch</h2>
+          <h2>Points gap</h2>
         </div>
         {season.status === "completed" ? (
           <p className="scoring-note">
-            This season is settled. {rows[0]?.name} finished{" "}
+            Season complete. {rows[0]?.name} finished{" "}
             {pointsLabel((rows[0]?.total || 0) - (rows[1]?.total || 0))} points
-            clear.
+            ahead.
           </p>
         ) : (
           rows.slice(1).map((p) => (
@@ -897,7 +936,7 @@ function GameCard({
       <h2>
         {game.voided_at
           ? "Nullified"
-          : `${players.find((p) => p.id === game.winner_id)?.name} takes the win.`}
+          : `${players.find((p) => p.id === game.winner_id)?.name} won`}
         {!game.voided_at && <Trophy size={19} />}
       </h2>
       <div className="game-score-grid">
@@ -1007,7 +1046,7 @@ function RecordDialog({
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="chamber-dialog">
-        <DialogTitle>Game {number}. Make it count.</DialogTitle>
+        <DialogTitle>Record game {number}</DialogTitle>
         <DialogDescription>
           {season.name} · Enter this game’s points, not cumulative totals.
         </DialogDescription>
@@ -1130,7 +1169,7 @@ function CreateDialog({
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="chamber-dialog">
-        <DialogTitle>A new season. A clean slate.</DialogTitle>
+        <DialogTitle>Create season</DialogTitle>
         <DialogDescription>
           Set the rules before the first game.
         </DialogDescription>
@@ -1214,7 +1253,7 @@ function CreateDialog({
             }
           }}
         >
-          Open the season
+          Create season
           <Plus size={17} />
         </button>
         {error && (

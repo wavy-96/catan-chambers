@@ -33,10 +33,10 @@ export type League = {
   role: "viewer" | "admin";
 };
 export const COLORS: Record<string, string> = {
-  Ezzy: "#f2b84b",
-  Tamim: "#9c8cf2",
-  Anas: "#68c7b5",
-  Akif: "#71a9e5",
+  Ezzy: "#a9680b",
+  Tamim: "#7c58b5",
+  Anas: "#268575",
+  Akif: "#397bb5",
 };
 
 export function seasonRules(season: Season) {

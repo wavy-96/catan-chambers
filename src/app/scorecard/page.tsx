@@ -25,13 +25,12 @@ export default async function Scorecard({
         {season.name}
         <em>
           {season.status === "completed"
-            ? "Final standings."
-            : "The race is on."}
+            ? "Final standings"
+            : "Current standings"}
         </em>
       </h1>
       <p>
-        {played} games · ₹{season.prize_pool.toLocaleString("en-IN")} on the
-        line
+        {played} games · ₹{season.prize_pool.toLocaleString("en-IN")} prize pool
       </p>
       {rows.map((p) => (
         <div className="export-row" key={p.id}>
@@ -51,7 +50,7 @@ export default async function Scorecard({
       {seasonRules(season).note && (
         <p className="forfeit-note">{seasonRules(season).note}</p>
       )}
-      <footer>THE INNER CIRCLE · EVERY POINT COUNTS</footer>
+      <footer>CATAN CHAMBERS</footer>
     </main>
   );
 }

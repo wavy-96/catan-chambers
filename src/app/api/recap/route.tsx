@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   );
   const awards = [
     {
-      label: "THE BIGGEST GAME",
+      label: "HIGHEST GAME SCORE",
       value: `${biggest} points`,
       names: [
         ...new Set(
@@ -43,11 +43,11 @@ export async function GET(req: NextRequest) {
       [
         {
           field: "bestStreak",
-          label: "THE HOT STREAK",
+          label: "LONGEST WIN STREAK",
           suffix: "wins in a row",
         },
-        { field: "roads", label: "ROAD ROYALTY", suffix: "Longest Roads" },
-        { field: "armies", label: "ARMY COMMAND", suffix: "Largest Armies" },
+        { field: "roads", label: "MOST ROADS", suffix: "Longest Roads" },
+        { field: "armies", label: "MOST ARMIES", suffix: "Largest Armies" },
       ] as const
     ).map((a) => {
       const max = Math.max(...rows.map((p) => p[a.field]));
@@ -63,10 +63,34 @@ export async function GET(req: NextRequest) {
   ];
   const title =
     slide === 0
-      ? `${winner.name} ran the table.`
+      ? `${winner.name}`
       : slide === 1
-        ? "Some things deserve a mention."
-        : "Bragging rights. Officially assigned.";
+        ? "Season highlights"
+        : "Final standings";
+  const theme =
+    slide === 2
+      ? {
+          bg: "#263041",
+          ink: "#fff8e9",
+          accent: "#f4c776",
+          muted: "#c3c4c8",
+          line: "#515866",
+        }
+      : slide === 1
+        ? {
+            bg: "#f5c76f",
+            ink: "#513313",
+            accent: "#8a4c09",
+            muted: "#80551c",
+            line: "#ccaa69",
+          }
+        : {
+            bg: "#fcf9f2",
+            ink: "#263041",
+            accent: "#a86108",
+            muted: "#657083",
+            line: "#e1d6c4",
+          };
   return new ImageResponse(
     (
       <div
@@ -75,8 +99,8 @@ export async function GET(req: NextRequest) {
           flexDirection: "column",
           width: "100%",
           height: "100%",
-          background: slide === 1 ? "#dbe9af" : "#19261c",
-          color: slide === 1 ? "#23321b" : "#f1f0de",
+          background: theme.bg,
+          color: theme.ink,
           padding: "90px 80px",
           fontFamily: "sans-serif",
         }}
@@ -116,7 +140,7 @@ export async function GET(req: NextRequest) {
                 fontSize: 285,
                 letterSpacing: -15,
                 fontWeight: 700,
-                color: "#dbe9af",
+                color: theme.accent,
                 lineHeight: 1,
               }}
             >
@@ -127,7 +151,7 @@ export async function GET(req: NextRequest) {
                 display: "flex",
                 fontSize: 28,
                 letterSpacing: 5,
-                color: "#a8ba96",
+                color: theme.muted,
                 marginTop: 20,
               }}
             >
@@ -137,8 +161,8 @@ export async function GET(req: NextRequest) {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                borderTop: "2px solid #4b5b3d",
-                borderBottom: "2px solid #4b5b3d",
+                borderTop: `2px solid ${theme.line}`,
+                borderBottom: `2px solid ${theme.line}`,
                 padding: "50px 0",
                 marginTop: 80,
               }}
@@ -175,7 +199,7 @@ export async function GET(req: NextRequest) {
                 marginTop: 80,
               }}
             >
-              {games.length} games. Four friends. One very satisfied champion.
+              Season champion · {games.length} games
             </div>
           </div>
         )}
@@ -187,7 +211,7 @@ export async function GET(req: NextRequest) {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  borderBottom: "2px solid #9cad79",
+                  borderBottom: `2px solid ${theme.line}`,
                   paddingBottom: 35,
                 }}
               >
@@ -217,12 +241,12 @@ export async function GET(req: NextRequest) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    borderBottom: "2px solid #4b5b3d",
+                    borderBottom: `2px solid ${theme.line}`,
                     padding: "35px 0",
                     gap: 30,
                   }}
                 >
-                  <span style={{ fontSize: 32, color: "#96a783" }}>
+                  <span style={{ fontSize: 32, color: theme.muted }}>
                     {p.rank}
                   </span>
                   <span
@@ -230,8 +254,8 @@ export async function GET(req: NextRequest) {
                       display: "flex",
                       width: 80,
                       height: 80,
-                      background: COLORS[p.name] || "#dbe9af",
-                      color: "#18261b",
+                      background: COLORS[p.name] || theme.accent,
+                      color: "#ffffff",
                       borderRadius: 24,
                       alignItems: "center",
                       justifyContent: "center",
@@ -252,7 +276,7 @@ export async function GET(req: NextRequest) {
                     }}
                   >
                     <b style={{ fontSize: 62 }}>{p.total}</b>
-                    <small style={{ fontSize: 23, color: "#b7cba0" }}>
+                    <small style={{ fontSize: 23, color: theme.muted }}>
                       {p.bonus ? `${p.points} + ${p.bonus} bonus` : "points"}
                     </small>
                   </div>
@@ -265,7 +289,7 @@ export async function GET(req: NextRequest) {
                   display: "flex",
                   marginTop: 50,
                   padding: 30,
-                  border: "2px dashed #8b9d67",
+                  border: `2px dashed ${theme.line}`,
                   fontSize: 33,
                   lineHeight: 1.4,
                 }}
@@ -282,7 +306,7 @@ export async function GET(req: NextRequest) {
                 fontSize: 29,
               }}
             >
-              <span>ON THE LINE</span>
+              <span>PRIZE POOL</span>
               <b style={{ fontSize: 58 }}>
                 INR {season.prize_pool.toLocaleString("en-IN")}
               </b>
@@ -298,7 +322,7 @@ export async function GET(req: NextRequest) {
             letterSpacing: 3,
           }}
         >
-          <span>{games.length} GAMES · THE INNER CIRCLE</span>
+          <span>{games.length} GAMES · CATAN CHAMBERS</span>
           <span>0{slide + 1} / 03</span>
         </div>
       </div>

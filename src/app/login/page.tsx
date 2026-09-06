@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { MotionPage } from "@/components/LeagueMotion";
 import { ArrowRight, LockKeyhole, Hexagon } from "lucide-react";
 export default function Login() {
   const [password, setPassword] = useState(""),
@@ -10,18 +11,14 @@ export default function Login() {
       <div className="login-orbit" aria-hidden="true">
         <Hexagon />
       </div>
-      <div className="login-content">
-        <p className="eyebrow">FOUR FRIENDS. ONE TABLE.</p>
+      <MotionPage className="login-content">
+        <p className="eyebrow">PRIVATE CATAN LEAGUE</p>
         <h1>
           Catan
           <br />
-          <em>Chambers.</em>
+          <em>Chambers</em>
         </h1>
-        <p className="login-description">
-          Every point. Every rivalry.
-          <br />
-          All the bragging rights.
-        </p>
+        <p className="login-description">Scores, seasons, and player stats.</p>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -42,7 +39,7 @@ export default function Login() {
             }
           }}
         >
-          <label htmlFor="passcode">Your chamber passcode</label>
+          <label htmlFor="passcode">Group or admin passcode</label>
           <input
             id="passcode"
             type="password"
@@ -50,10 +47,10 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            placeholder="Members only"
+            placeholder="Enter passcode"
           />
           <button className="primary-button" disabled={busy}>
-            {busy ? "Opening the chamber…" : "Enter the chamber"}
+            {busy ? "Signing in…" : "Sign in"}
             <ArrowRight size={18} />
           </button>
           {error && (
@@ -63,9 +60,9 @@ export default function Login() {
           )}
         </form>
         <p className="private-note">
-          <LockKeyhole size={14} /> A private league for the inner circle.
+          <LockKeyhole size={14} /> Shared with your group.
         </p>
-      </div>
+      </MotionPage>
     </main>
   );
 }

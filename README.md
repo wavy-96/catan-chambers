@@ -8,7 +8,8 @@ A private, phone-first Catan tournament tracker for Ezzy, Tamim, Anas, and Akif.
 - Points-race chart, win rates, recent form, best streaks, Road/Army leaders, head-to-head results, same-stage season comparison, and comeback scenarios.
 - Game history with admin-only recording and audited nullification that preserves the original records.
 - Player avatars through the existing `players.avatar_url` field, with initials until photos are supplied.
-- Three-page season recaps with private 1080 × 1920 PNG export.
+- Three-page season recaps with private 1080 × 1920 PNG export. Images are prepared before tapping Share so the native share sheet keeps its user-gesture permission; Save image remains available as a fallback.
+- Warm parchment and amber colors, spring tab transitions, card entrances, score animations, and reduced-motion support. Filters scroll and compact rows wrap on narrow phones.
 - Shared viewing passcode; the existing admin password grants recording/nullification access. Signed HttpOnly cookies expire after 30 days.
 - Optional local WhatsApp companion (parked; not connected or running): strict result template, stats questions, and scorecard screenshots. See `bot/README.md`.
 
@@ -48,3 +49,9 @@ Season rules and completion notes live in the private database. Achievement ties
 Deploy to the existing Vercel project with a current Vercel CLI. Runtime secrets must be configured there; `.env.local` and the bot are excluded from deployment. CRON_SECRET protects the existing daily database ping. The bot requires its own awake computer and is not a serverless function.
 
 The app and bot dependency trees were patched and audited during the upgrade. The app's remaining lint warnings originate mainly from legacy unused components. Tests cover scoring, session tampering, malformed results, quotes, cumulative deltas, and duplicate delivery. Database transaction checks should run inside a rolled-back transaction, never by leaving fake results in real seasons.
+
+## Design references and mobile checks
+
+The original parchment, amber, white, and slate palette is preserved. Interface labels describe the data and actions directly. The floating navigation and progress hierarchy draw from Mobbin’s public [tab-bar](https://mobbin.com/explore/mobile/ui-elements/tab-bar) and [progress-screen](https://mobbin.com/explore/mobile/screens/progress) collections.
+
+Browser checks cover all four main screens at 320, 360, 390, and 430 CSS pixels, plus 25% larger text at 320 pixels. The three story pages were checked for overflow, valid PNG sharing with active user-gesture permission (share API mocked; no messages sent), and an actual image download. Native app availability in the share sheet is controlled by the phone.
